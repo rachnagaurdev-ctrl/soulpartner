@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class StaffResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+
+        return [
+            "id" => $this->id,
+            "name" => $this->name,
+            'image' => get_media_url($this->image),
+            'position' => $this->position,
+            'description' => $this->description,
+            'linkdin_link' => $this->linkdin_link
+
+        ];
+        return parent::toArray($request);
+    }
+}
