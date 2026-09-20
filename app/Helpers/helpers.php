@@ -185,3 +185,102 @@ if(!function_exists('get_plans')){
         return    $plans       = App\Http\Controllers\CheckoutController::getPlans();
     }
 }
+
+if (!function_exists('get_cities')) {
+    /**
+     * Return a sorted collection of all major cities in India.
+     */
+    function get_cities(): \Illuminate\Support\Collection
+    {
+        $cities = [
+            "Agra", "Ahmedabad", "Aizawl", "Ajmer", "Akola", "Aligarh", "Allahabad",
+            "Alwar", "Amravati", "Amritsar", "Anand", "Anantapur", "Aurangabad",
+            "Ayodhya", "Azamgarh",
+            "Bagalkot", "Bahraich", "Ballari", "Bangalore", "Bareilly", "Bathinda",
+            "Belagavi", "Bengaluru", "Bhagalpur", "Bhavnagar", "Bhopal", "Bhubaneswar",
+            "Bidar", "Bikaner", "Bilaspur",
+            "Chandigarh", "Chennai", "Coimbatore", "Cuttack",
+            "Dahod", "Davangere", "Dehradun", "Delhi", "Dhanbad", "Dharamsala",
+            "Dhule", "Durgapur",
+            "Erode",
+            "Faridabad", "Firozabad", "Firozpur",
+            "Gandhinagar", "Gaya", "Ghaziabad", "Gorakhpur", "Gulbarga", "Guntur",
+            "Gurugram", "Guwahati", "Gwalior",
+            "Hapur", "Haridwar", "Hassan", "Hubli", "Hyderabad",
+            "Imphal", "Indore", "Itanagar",
+            "Jabalpur", "Jaipur", "Jalandhar", "Jalgaon", "Jammu", "Jamnagar",
+            "Jamshedpur", "Jhansi", "Jodhpur", "Junagadh",
+            "Kakinada", "Kalyan", "Kanpur", "Karimnagar", "Karnal", "Kochi",
+            "Kohima", "Kolhapur", "Kolkata", "Kota", "Kozhikode", "Kurnool",
+            "Latur", "Lucknow", "Ludhiana",
+            "Madurai", "Mangaluru", "Mathura", "Meerut", "Moradabad", "Mumbai",
+            "Muzaffarnagar", "Muzaffarpur", "Mysuru",
+            "Nagpur", "Nanded", "Nashik", "Navi Mumbai", "Noida",
+            "Panaji", "Patiala", "Patna", "Pondicherry", "Pune",
+            "Raipur", "Rajkot", "Rampur", "Ranchi", "Rohtak",
+            "Salem", "Sangli", "Shillong", "Shimla", "Siliguri", "Solapur",
+            "Srinagar", "Surat", "Surendranagar",
+            "Thane", "Thiruvananthapuram", "Thrissur", "Tirunelveli",
+            "Tirupati", "Tirupur", "Tiruvannamalai",
+            "Udaipur", "Ujjain",
+            "Vadodara", "Varanasi", "Vijayawada", "Visakhapatnam",
+            "Warangal",
+            "Yamuna Nagar",
+        ];
+
+        sort($cities);
+
+        return collect($cities);
+    }
+}
+
+if (!function_exists('get_dates')) {
+    /**
+     * Return the next $days days as an array of ['label', 'value'] pairs.
+     */
+    function get_dates(int $days = 7): \Illuminate\Support\Collection
+    {
+        return collect(range(0, $days - 1))->map(function (int $i) {
+            $date = \Carbon\Carbon::today()->addDays($i);
+
+            $label = match (true) {
+                $i === 0 => 'Today — '    . $date->format('d M'),
+                $i === 1 => 'Tomorrow — ' . $date->format('d M'),
+                default  => $date->format('l, d M'),
+            };
+
+            return [
+                'label' => $label,
+                'value' => $date->toDateString(),
+            ];
+        });
+    }
+}
+
+if (!function_exists('get_genders')) {
+    /**
+     * Return a standardized list of genders.
+     */
+    function get_genders(): array
+    {
+        return [
+            'Male' => 'Male',
+            'Female' => 'Female',
+            'Other' => 'Other',
+        ];
+    }
+}
+
+if (!function_exists('get_purposes')) {
+    /**
+     * Return a standardized list of user purposes ("I want to").
+     */
+    function get_purposes(): array
+    {
+        return [
+            'find' => 'Find a KoPartner',
+            'become' => 'Become a KoPartner',
+            'both' => 'Both (Find & Earn)',
+        ];
+    }
+}

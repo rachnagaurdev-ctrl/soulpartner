@@ -177,11 +177,9 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
                   </span>
                   <select id="coGender" name="gender">
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="non-binary">Non-Binary</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
+                    @foreach(get_genders() as $key => $val)
+                      <option value="{{ $key }}">{{ $val }}</option>
+                    @endforeach
                   </select>
                 </div>
               </div>
@@ -235,9 +233,9 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </span>
                   <select id="coUserType" name="user_type">
-                    <option value="find">Find a KoPartner</option>
-                    <option value="become">Become a KoPartner</option>
-                    <option value="both" selected>Both (Find &amp; Earn)</option>
+                    @foreach(get_purposes() as $key => $val)
+                      <option value="{{ $key }}" @if($key == 'both') selected @endif>{{ $val }}</option>
+                    @endforeach
                   </select>
                 </div>
               </div>

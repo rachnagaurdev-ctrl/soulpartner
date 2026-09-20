@@ -159,7 +159,7 @@
           <p>{!!($data['description'])!!}</p>
         </div>
         @php
-            $limit = $data['limit'] ?? 20;
+            $limit = $data['limit'] ?? 4;
             $categories = get_catgeories($limit);
         @endphp
         <div class="category-grid">
@@ -208,6 +208,128 @@
           @empty
           <p class="text-center" style="grid-column:1/-1;">No categories found.</p>
           @endforelse
+
+          {{-- View All Categories Card --}}
+          <article class="category-card category-card--viewall">
+            <a href="{{ route('page.show', ['slug' => 'partners']) }}" class="viewall-inner">
+              <div class="viewall-icon-wrap">
+                <span class="viewall-icon">
+                  <i class="fa-solid fa-grid-2"></i>
+                </span>
+              </div>
+              <h3 class="viewall-title">View All<br>Categories</h3>
+              <p class="viewall-sub">Explore every activity &amp; find your ideal companion</p>
+              <span class="viewall-btn">
+                Browse All <i class="fa-solid fa-arrow-right viewall-arrow"></i>
+              </span>
+            </a>
+          </article>
+
         </div>
       </div>
     </section>
+
+<style>
+/* === View All Card === */
+.category-card--viewall {
+  background: linear-gradient(145deg, #1e1040 0%, #3b1d74 60%, #6b1fa8 100%);
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.category-card--viewall::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(216,11,118,0.28) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.viewall-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 20px;
+  width: 100%;
+  text-decoration: none;
+  position: relative;
+  z-index: 1;
+  gap: 10px;
+}
+
+.viewall-icon-wrap {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.category-card--viewall:hover .viewall-icon-wrap {
+  transform: scale(1.12);
+  background: rgba(216,11,118,0.35);
+}
+
+.viewall-icon {
+  font-size: 24px;
+  color: #fff;
+}
+
+.viewall-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.viewall-sub {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.62);
+  line-height: 1.4;
+  margin: 0;
+  max-width: 160px;
+}
+
+.viewall-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+  padding: 8px 20px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #d80b76, #c90070);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(216,11,118,0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.category-card--viewall:hover .viewall-btn {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(216,11,118,0.5);
+}
+
+.viewall-arrow {
+  animation: arrowPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(4px); }
+}
+</style>

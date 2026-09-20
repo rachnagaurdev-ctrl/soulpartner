@@ -5,7 +5,7 @@
       <!-- Top Row: Logo, Nav, Socials -->
       <div class="footer-top-row">
         <a href="index.html" class="footer-brand-logo">
-          <img src="{{asset('assets/images/logo.jpg')}}" alt="Soulmate India Logo">
+          <img src="{{asset('assets/images/logo.jpeg')}}" alt="Soulmate India Logo">
         </a>
 
         <nav class="footer-nav-menu" aria-label="Footer Navigation">
@@ -240,7 +240,7 @@
                 <span class="input-icon">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </span>
-                <input type="date" id="regDob" required>
+                <input type="date" id="regDob" required max="{{ \Carbon\Carbon::now()->subYears(18)->format('Y-m-d') }}">
               </div>
             </div>
             <div class="form-group-modern">
@@ -251,10 +251,9 @@
                 </span>
                 <select id="regGender" required>
                   <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="non-binary">Non-Binary</option>
-                  <option value="prefer-not-to-say">Prefer not to say</option>
+                  @foreach(get_genders() as $key => $val)
+                    <option value="{{ $key }}">{{ $val }}</option>
+                  @endforeach
                 </select>
               </div>
             </div>

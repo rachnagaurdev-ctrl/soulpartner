@@ -36,6 +36,31 @@ Route::middleware('auth')->group(function () {
 // Route::get('partners', [App\Http\Controllers\PageController::class, 'partners'])->name('partners');
 Route::get('partners-profile/{profile_id}', [App\Http\Controllers\PageController::class, 'partnerProfile'])->name('partners.profile');
 
+Route::get('/backup-db', function () {
+    $dbName = env('DB_DATABASE', 'soulmate');
+    $dbUser = env('DB_USERNAME', 'root');
+    $dbPass = env('DB_PASSWORD', '');
+
+    $filename = "backup-" . date('Y-m-d-H-i-s') . ".sql";
+    $path = storage_path('app/' . $filename);
+
+    $command = "c:\xampp\mysql\bin\mysqldump.exe -u {$dbUser}";
+    if (!empty($dbPass)) {
+        $command .= " -p{$dbPass}";
+    }
+    $command .= " {$dbName} > \"{$path}\"";
+
+    $output = [];
+    $returnVar = null;
+    exec($command, $output, $returnVar);
+
+    if ($returnVar !== 0) {
+        return "Backup failed. Command: {$command}";
+    }
+
+    return response()->download($path)->deleteFileAfterSend(true);
+})->name('backup.db');
+
 Route::get('/{slug?}', [App\Http\Controllers\PageController::class, 'show'])
     ->where('slug', '^(?!admin|livewire|api|storage|assets|favicon|_debugbar).*$')
     ->name('page.show');

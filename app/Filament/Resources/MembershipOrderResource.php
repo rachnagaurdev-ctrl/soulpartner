@@ -63,8 +63,7 @@ class MembershipOrderResource extends Resource
                             ->options([
                                 'male' => 'Male',
                                 'female' => 'Female',
-                                'non-binary' => 'Non-Binary',
-                                'prefer-not-to-say' => 'Prefer not to say',
+                                'other' => 'Other',
                             ]),
                         Forms\Components\Select::make('user_type')
                             ->label('Purpose / Role')

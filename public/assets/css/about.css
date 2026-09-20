@@ -91,7 +91,7 @@
   letter-spacing: -0.01em;
 }
 
-.about-hero-title .title-accent {
+.about-hero-title span {
   color: var(--about-pink);
   font-style: italic;
   font-weight: 700;

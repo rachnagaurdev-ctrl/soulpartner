@@ -121,7 +121,7 @@ h2 {
 }
 
 .brand img {
-  width: 170px;
+  width: 80px;
   height: auto;
   display: block;
 }
@@ -238,7 +238,7 @@ h2 {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.82) 38%, rgba(255, 255, 255, 0.15) 70%), url("../images/hero.jpg");
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.82) 38%, rgba(255, 255, 255, 0.15) 70%), var(--bg-image);
   background-position: center;
   background-size: cover;
 }
@@ -926,13 +926,13 @@ h2 {
   flex-direction: column;
   gap: 12px;
   position: relative;
-  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1), box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
-  box-shadow: 0 4px 18px rgba(30,17,60,0.05);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 18px rgba(30, 17, 60, 0.05);
 }
 
 .plan-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 32px rgba(30,17,60,0.1);
+  box-shadow: 0 12px 32px rgba(30, 17, 60, 0.1);
 }
 
 /* Card Header */
@@ -953,10 +953,21 @@ h2 {
   flex-shrink: 0;
 }
 
-.plan-icon-silver  { background: #f0eaf8; }
-.plan-icon-gold    { background: #fff4e0; }
-.plan-icon-premium { background: #f0ecf8; }
-.plan-icon-yearly  { background: #fce8f4; }
+.plan-icon-silver {
+  background: #f0eaf8;
+}
+
+.plan-icon-gold {
+  background: #fff4e0;
+}
+
+.plan-icon-premium {
+  background: #f0ecf8;
+}
+
+.plan-icon-yearly {
+  background: #fce8f4;
+}
 
 .plan-name {
   font-size: 16px;
@@ -999,27 +1010,27 @@ h2 {
 }
 
 .plan-match-silver {
-  background: rgba(216,11,118,0.08);
+  background: rgba(216, 11, 118, 0.08);
   color: #d80b76;
-  border: 1.5px solid rgba(216,11,118,0.18);
+  border: 1.5px solid rgba(216, 11, 118, 0.18);
 }
 
 .plan-match-gold {
-  background: rgba(234,152,0,0.1);
+  background: rgba(234, 152, 0, 0.1);
   color: #b87200;
-  border: 1.5px solid rgba(234,152,0,0.22);
+  border: 1.5px solid rgba(234, 152, 0, 0.22);
 }
 
 .plan-match-premium {
-  background: rgba(85,49,168,0.08);
+  background: rgba(85, 49, 168, 0.08);
   color: #5531a8;
-  border: 1.5px solid rgba(85,49,168,0.18);
+  border: 1.5px solid rgba(85, 49, 168, 0.18);
 }
 
 .plan-match-yearly {
-  background: linear-gradient(135deg, rgba(216,11,118,0.12), rgba(85,49,168,0.12));
+  background: linear-gradient(135deg, rgba(216, 11, 118, 0.12), rgba(85, 49, 168, 0.12));
   color: #d80b76;
-  border: 1.5px solid rgba(216,11,118,0.22);
+  border: 1.5px solid rgba(216, 11, 118, 0.22);
 }
 
 /* Features List */
@@ -1049,12 +1060,12 @@ h2 {
   height: 15px;
   min-width: 15px;
   border-radius: 50%;
-  background: rgba(216,11,118,0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d80b76' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / 9px;
+  background: rgba(216, 11, 118, 0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d80b76' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / 9px;
   margin-top: 1px;
 }
 
 .plan-features-yearly li::before {
-  background: rgba(216,11,118,0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d80b76' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / 9px;
+  background: rgba(216, 11, 118, 0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d80b76' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / 9px;
 }
 
 /* Plan Buttons */
@@ -1074,57 +1085,61 @@ h2 {
 .plan-btn-silver {
   background: #5531a8;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(85,49,168,0.22);
+  box-shadow: 0 4px 14px rgba(85, 49, 168, 0.22);
 }
+
 .plan-btn-silver:hover {
   background: #431d90;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(85,49,168,0.34);
+  box-shadow: 0 6px 20px rgba(85, 49, 168, 0.34);
 }
 
 .plan-btn-gold {
   background: linear-gradient(135deg, #f5a623 0%, #f07d00 100%);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(240,125,0,0.28);
+  box-shadow: 0 4px 14px rgba(240, 125, 0, 0.28);
 }
+
 .plan-btn-gold:hover {
   background: linear-gradient(135deg, #e09615 0%, #d96d00 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(240,125,0,0.4);
+  box-shadow: 0 6px 20px rgba(240, 125, 0, 0.4);
 }
 
 .plan-btn-premium {
   background: linear-gradient(135deg, #5531a8 0%, #7c3aed 100%);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(85,49,168,0.28);
+  box-shadow: 0 4px 14px rgba(85, 49, 168, 0.28);
 }
+
 .plan-btn-premium:hover {
   background: linear-gradient(135deg, #4320a0 0%, #6b2adb 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(85,49,168,0.4);
+  box-shadow: 0 6px 20px rgba(85, 49, 168, 0.4);
 }
 
 .plan-btn-yearly {
   background: linear-gradient(135deg, #d80b76 0%, #ef2c8c 100%);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(216,11,118,0.32);
+  box-shadow: 0 4px 14px rgba(216, 11, 118, 0.32);
   padding: 12px 14px;
 }
+
 .plan-btn-yearly:hover {
   background: linear-gradient(135deg, #be0967 0%, #df1979 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(216,11,118,0.48);
+  box-shadow: 0 6px 22px rgba(216, 11, 118, 0.48);
 }
 
 /* Yearly "Best Value" Card */
 .plan-yearly {
   border: 2px solid #d80b76;
   background: linear-gradient(180deg, #fff5fa 0%, #ffffff 40%);
-  box-shadow: 0 8px 28px rgba(216,11,118,0.14);
+  box-shadow: 0 8px 28px rgba(216, 11, 118, 0.14);
 }
 
 .plan-yearly:hover {
-  box-shadow: 0 16px 42px rgba(216,11,118,0.24);
+  box-shadow: 0 16px 42px rgba(216, 11, 118, 0.24);
 }
 
 /* BEST VALUE top badge */
@@ -1159,7 +1174,7 @@ h2 {
   font-weight: 900;
   line-height: 1;
   text-align: center;
-  box-shadow: 0 4px 14px rgba(216,11,118,0.4);
+  box-shadow: 0 4px 14px rgba(216, 11, 118, 0.4);
   border: 2px solid #fff;
 }
 
@@ -1177,6 +1192,7 @@ h2 {
     grid-template-columns: 220px 1fr;
     gap: 24px;
   }
+
   .plans-row {
     gap: 10px;
   }
@@ -1187,11 +1203,13 @@ h2 {
     grid-template-columns: 1fr;
     gap: 32px;
   }
+
   .membership-intro {
     text-align: center;
     max-width: 500px;
     margin: 0 auto;
   }
+
   .plans-row {
     grid-template-columns: repeat(2, 1fr);
     max-width: 620px;
@@ -1325,13 +1343,13 @@ h2 {
     text-align: center;
     gap: 20px;
   }
-  
+
   .footer-nav-menu {
     flex-wrap: wrap;
     justify-content: center;
     gap: 16px 20px;
   }
-  
+
   .footer-bottom-row {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -1704,7 +1722,7 @@ h2 {
   }
 
   .hero:before {
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.8) 45%, rgba(255, 255, 255, 0.1) 100%), url("../images/hero.jpg");
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.8) 45%, rgba(255, 255, 255, 0.1) 100%), var(--bg-image);
     background-position: center bottom;
   }
 
@@ -2027,9 +2045,9 @@ h2 {
   object-fit: cover;
   object-position: 25% center;
   -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%),
-                      linear-gradient(to bottom, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
+    linear-gradient(to bottom, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
   mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%),
-              linear-gradient(to bottom, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
+    linear-gradient(to bottom, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
   opacity: 0.92;
@@ -2374,9 +2392,11 @@ h2 {
     opacity: 0.35;
     width: 260px;
   }
+
   .earning-decor-sticker {
     display: none;
   }
+
   .earning-categories-grid {
     grid-template-columns: repeat(2, 1fr);
     max-width: 640px;
@@ -2387,16 +2407,19 @@ h2 {
   .earning-bg-decor-left {
     display: none;
   }
+
   .earning-stats-grid {
     grid-template-columns: repeat(2, 1fr);
     max-width: 500px;
   }
+
   .earning-offer-banner {
     flex-direction: column;
     text-align: center;
     gap: 8px;
     padding: 14px 20px;
   }
+
   .offer-divider {
     display: none;
   }
@@ -2406,12 +2429,15 @@ h2 {
   .earning-section {
     padding: 55px 0 65px;
   }
+
   .earning-stats-grid {
     grid-template-columns: 1fr;
   }
+
   .earning-categories-grid {
     grid-template-columns: 1fr;
   }
+
   .earning-cta-btn {
     width: 100%;
     padding: 14px 24px;
@@ -2736,12 +2762,12 @@ h2 {
   flex-shrink: 0;
 }
 
-.filter-checkbox-item input:checked ~ .custom-check {
+.filter-checkbox-item input:checked~.custom-check {
   background: var(--pink);
   border-color: var(--pink);
 }
 
-.filter-checkbox-item input:checked ~ .custom-check::after {
+.filter-checkbox-item input:checked~.custom-check::after {
   content: "";
   width: 4px;
   height: 8px;
@@ -4673,7 +4699,7 @@ h2 {
 
 .ribbon-heart {
   font-size: 16px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .ribbon-brand-text {
@@ -4770,9 +4796,11 @@ h2 {
 .modal-auth-card .auth-body::-webkit-scrollbar {
   width: 6px;
 }
+
 .modal-auth-card .auth-body::-webkit-scrollbar-track {
   background: #fdfafc;
 }
+
 .modal-auth-card .auth-body::-webkit-scrollbar-thumb {
   background: #ecd5e3;
   border-radius: 10px;
@@ -4896,7 +4924,7 @@ h2 {
   box-shadow: 0 0 0 3px rgba(216, 11, 118, 0.12);
 }
 
-.input-icon-wrap input:focus + .input-icon,
+.input-icon-wrap input:focus+.input-icon,
 .input-icon-wrap:focus-within .input-icon {
   color: #d80b76;
 }
@@ -5044,12 +5072,12 @@ h2 {
   background: #fff;
 }
 
-.checkbox-modern input:checked + .custom-check {
+.checkbox-modern input:checked+.custom-check {
   background: #d80b76;
   border-color: #d80b76;
 }
 
-.checkbox-modern input:checked + .custom-check:after {
+.checkbox-modern input:checked+.custom-check:after {
   content: "✓";
   color: #fff;
   font-size: 12px;
@@ -5114,12 +5142,14 @@ h2 {
     width: 96vw !important;
     border-radius: 18px !important;
   }
+
   .form-grid-2,
   .form-grid-3,
   .purpose-selection-grid {
     grid-template-columns: 1fr;
     gap: 8px;
   }
+
   .modal-auth-card .auth-body {
     padding: 18px 16px 24px !important;
   }
@@ -5963,9 +5993,11 @@ h2 {
   .checkout-layout {
     grid-template-columns: 1fr;
   }
+
   .order-summary-box {
     position: static;
   }
+
   .checkout-hero-inner {
     flex-direction: column;
     align-items: flex-start;
@@ -5976,9 +6008,11 @@ h2 {
   .checkout-plans-grid {
     grid-template-columns: 1fr;
   }
+
   .checkout-form-grid {
     grid-template-columns: 1fr;
   }
+
   .checkout-header-security span {
     display: none;
   }
@@ -6010,7 +6044,7 @@ h2 {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(216,11,118,0.03) 0%, rgba(102,51,153,0.03) 100%);
+  background: linear-gradient(135deg, rgba(216, 11, 118, 0.03) 0%, rgba(102, 51, 153, 0.03) 100%);
   opacity: 0;
   transition: opacity 0.25s ease;
 }
@@ -6018,7 +6052,7 @@ h2 {
 .auto-renew-toggle-card.enabled {
   border-color: #d80b76;
   background: #fff5fb;
-  box-shadow: 0 0 0 4px rgba(216,11,118,0.08);
+  box-shadow: 0 0 0 4px rgba(216, 11, 118, 0.08);
 }
 
 .auto-renew-toggle-card.enabled::before {
@@ -6092,16 +6126,55 @@ h2 {
   height: 20px;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: left 0.25s ease;
 }
 
-.auto-renew-checkbox:checked ~ .auto-renew-switch,
+.auto-renew-checkbox:checked~.auto-renew-switch,
 .auto-renew-toggle-card.enabled .auto-renew-switch {
   background: linear-gradient(135deg, #d80b76 0%, #9333ea 100%);
 }
 
-.auto-renew-checkbox:checked ~ .auto-renew-switch::after,
+.auto-renew-checkbox:checked~.auto-renew-switch::after,
 .auto-renew-toggle-card.enabled .auto-renew-switch::after {
   left: 27px;
+}
+
+/* --- Form Input Icons Fix --- */
+.input-icon-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.input-icon-wrap .input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a491a9;
+  display: flex;
+  pointer-events: none;
+  z-index: 2;
+}
+.input-icon-wrap input,
+.input-icon-wrap select {
+  padding-left: 46px !important;
+  width: 100%;
+}
+.input-icon-wrap .pw-toggle-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #a491a9;
+  cursor: pointer;
+  z-index: 3;
+  padding: 0;
+  display: flex;
+}
+.input-icon-wrap.pw-wrap input {
+  padding-right: 46px !important;
 }

@@ -1,23 +1,53 @@
 <div>
     @if($success)
-        <div class="success-message p-6 bg-green-50 border border-green-200 rounded-xl text-center">
-            <div class="flex justify-center mb-4">
-                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+        <div class="success-message" style="padding: 30px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 15px; text-align: center;">
+            <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                <div style="width: 50px; height: 50px; background-color: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #16a34a;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 24px; height: 24px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                 </div>
             </div>
-            <h3 class="text-xl font-semibold text-green-800 mb-2">Success!</h3>
-            <p class="text-green-700">{{ $formModel->settings['success_message'] ?? 'Your submission has been received.' }}</p>
-            <button wire:click="$set('success', false)" class="mt-4 text-sm font-medium text-green-600 hover:text-green-500 underline">
+            <h3 style="font-size: 22px; font-weight: 600; color: #166534; margin: 0 0 10px 0;">Success!</h3>
+            <p style="color: #15803d; margin: 0;">{{ $formModel->settings['success_message'] ?? 'Your submission has been received.' }}</p>
+            <button wire:click="$set('success', false)" style="margin-top: 20px; font-size: 15px; font-weight: 500; color: #E91E63; text-decoration: underline; background: none; border: none; cursor: pointer;">
                 Send another message
             </button>
         </div>
     @else
-        <form wire:submit.prevent="submit" class="space-y-6">
-            <div class="grid grid-cols-1 gap-6">
+        <form wire:submit.prevent="submit" class="contact-form">
+            <!-- First Row: Full Name & Email -->
+            <div class="form-row-2col" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 12px;">
                 @foreach($formModel->fields as $field)
+                    @if(in_array($field['data']['name'], ['full_name', 'email']))
+                        @php
+                            $type = $field['type'];
+                            $config = $field['data'];
+                            $name = $config['name'];
+                            $label = $config['label'];
+                            $placeholder = $config['placeholder'] ?? '';
+                            $required = $config['required'] ?? false;
+                        @endphp
+                        <div class="form-group">
+                            <label for="{{ $name }}" class="form-label">
+                                {{ $label }} @if($required)<span class="required-star">*</span>@endif
+                            </label>
+                            <input type="{{ $type }}" 
+                                   wire:model="data.{{ $name }}" 
+                                   id="{{ $name }}"
+                                   placeholder="{{ $placeholder }}"
+                                   class="form-input @error('data.'.$name) error @enderror">
+                            @error('data.'.$name)
+                                <p class="text-secondary" style="color: red; font-size: 12px; margin-top: 5px;">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+
+            <!-- Other Fields -->
+            @foreach($formModel->fields as $field)
+                @if(!in_array($field['data']['name'], ['full_name', 'email']))
                     @php
                         $type = $field['type'];
                         $config = $field['data'];
@@ -27,29 +57,31 @@
                         $required = $config['required'] ?? false;
                     @endphp
 
-                    <div class="form-group">
-                        <label for="{{ $name }}" class="block text-sm font-semibold text-primary mb-2">
-                            {{ $label }} @if($required)<span class="text-secondary">*</span>@endif
-                        </label>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        @if($type !== 'checkbox')
+                            <label for="{{ $name }}" class="form-label">
+                                {{ $label }} @if($required)<span class="required-star">*</span>@endif
+                            </label>
+                        @endif
 
                         @if($type === 'text' || $type === 'email')
                             <input type="{{ $type }}" 
                                    wire:model="data.{{ $name }}" 
                                    id="{{ $name }}"
                                    placeholder="{{ $placeholder }}"
-                                   class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-200 @error('data.'.$name) border-red-500 @enderror">
+                                   class="form-input @error('data.'.$name) error @enderror">
                         
                         @elseif($type === 'textarea')
                             <textarea wire:model="data.{{ $name }}" 
                                       id="{{ $name }}" 
                                       rows="4"
                                       placeholder="{{ $placeholder }}"
-                                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-200 @error('data.'.$name) border-red-500 @enderror"></textarea>
+                                      class="form-textarea @error('data.'.$name) error @enderror"></textarea>
 
                         @elseif($type === 'select')
                             <select wire:model="data.{{ $name }}" 
                                     id="{{ $name }}"
-                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-200 @error('data.'.$name) border-red-500 @enderror">
+                                    class="form-select @error('data.'.$name) error @enderror">
                                 <option value="">Select an option</option>
                                 @foreach($config['options'] as $option)
                                     <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
@@ -57,48 +89,39 @@
                             </select>
 
                         @elseif($type === 'checkbox')
-                            <div class="flex items-center">
+                            <div class="form-checkbox-row">
                                 <input type="checkbox" 
                                        wire:model="data.{{ $name }}" 
                                        id="{{ $name }}"
-                                       class="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary @error('data.'.$name) border-red-500 @enderror">
-                                <label for="{{ $name }}" class="ml-3 text-sm text-gray-600">
-                                    {{ $label }}
+                                       class="custom-checkbox @error('data.'.$name) error @enderror">
+                                <label for="{{ $name }}" class="checkbox-label">
+                                    {!! $label !!} @if($required)<span class="required-star">*</span>@endif
                                 </label>
                             </div>
                         @endif
 
                         @error('data.'.$name)
-                            <p class="mt-1 text-xs text-secondary">{{ $message }}</p>
+                            <p class="text-secondary" style="color: red; font-size: 12px; margin-top: 5px;">{{ $message }}</p>
                         @enderror
                     </div>
-                @endforeach
-            </div>
+                @endif
+            @endforeach
 
-            <div class="pt-4">
-                <button type="submit" 
-                        class="primary_btn w-full justify-center py-4 text-lg font-bold group"
-                        wire:loading.attr="disabled">
-                    <span class="primary_btn_text" wire:loading.remove>
-                        {{ $formModel->settings['submit_button_text'] ?? 'Submit' }}
-                        <div class="arrow_main">
-                            <span class="primary_btn_icon primary_btn_top">
-                                <img class="img-fluid" src="{{ asset('assets/images/arrow-icon-white.svg') }}" alt="">
-                            </span>  
-                            <span class="primary_btn_icon primary_btn_bottom">
-                                <img class="img-fluid" src="{{ asset('assets/images/arrow-icon-white.svg') }}" alt="">
-                            </span>
-                        </div>
-                    </span>
-                    <span wire:loading class="flex items-center gap-2">
-                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Processing...
-                    </span>
-                </button>
-            </div>
+            <button type="submit" 
+                    class="btn-submit-contact"
+                    id="submitBtn"
+                    wire:loading.attr="disabled">
+                <div wire:loading.remove>
+                    <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; width: 20px; height: 20px; margin-right: 8px;">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span style="vertical-align:middle;">{{ $formModel->settings['submit_button_text'] ?? 'Send Message' }}</span>
+                </div>
+                <div wire:loading>
+                    <span style="vertical-align:middle;">Processing...</span>
+                </div>
+            </button>
         </form>
     @endif
 </div>
