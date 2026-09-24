@@ -148,6 +148,9 @@
             <a href="#" class="forgot-link">Forgot password?</a>
           </div>
 
+          <!-- Inline Error Banner for Login -->
+          <div class="reg-error-msg" id="loginErrorMsg" style="display: none;"></div>
+
           <button type="submit" class="btn btn-primary auth-submit-btn">Log In</button>
 
           <div class="auth-divider"><span>OR</span></div>

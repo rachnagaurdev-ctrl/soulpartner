@@ -55,6 +55,7 @@ class User extends Authenticatable implements FilamentUser
         'referred_by',
         'wallet_balance',
         'is_active',
+        'last_seen_at',
     ];
 
     /**
@@ -63,6 +64,14 @@ class User extends Authenticatable implements FilamentUser
     public function getAgeAttribute()
     {
         return $this->dob ? \Carbon\Carbon::parse($this->dob)->age : null;
+    }
+
+    /**
+     * Check if user is currently online (seen in last 5 mins).
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5;
     }
 
     /**
@@ -84,6 +93,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
             'languages' => 'array',
             'interests' => 'array',

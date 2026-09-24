@@ -186,6 +186,24 @@ document.addEventListener('DOMContentLoaded', () => {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const errBox = document.getElementById('loginErrorMsg');
+      if (errBox) {
+        errBox.style.display = 'none';
+        errBox.textContent = '';
+      }
+
+      function showLoginError(msg) {
+        if (msg === "The provided credentials do not match our records.") {
+          msg = "Invalid credentials";
+        }
+        if (errBox) {
+          errBox.textContent = msg;
+          errBox.style.display = 'block';
+        } else {
+          alert(msg);
+        }
+      }
+
       const formData = new FormData(loginForm);
       const email = formData.get('email');
       const password = formData.get('password');
@@ -207,11 +225,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response.ok && data.success) {
           window.location.href = data.redirect || '/dashboard';
         } else {
-          alert(data.message || 'Login failed. Please check your credentials.');
+          showLoginError(data.message || 'Login failed. Please check your credentials.');
         }
       } catch (error) {
         console.error('Login error:', error);
-        alert('An error occurred during login. Please try again.');
+        showLoginError('An error occurred during login. Please try again.');
       }
     });
   }

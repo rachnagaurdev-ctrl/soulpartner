@@ -476,10 +476,10 @@
     <div class="topbar-left">
       <img src="{{ asset('assets/images/logo.jpeg') }}" alt="Soulmate India">
     </div>
-    <div class="search-bar">
+    <!-- <div class="search-bar">
       <svg width="18" height="18" fill="none" stroke="#A0AEC0" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
       <input type="text" placeholder="Search partners, activities, or location...">
-    </div>
+    </div> -->
     <div class="topbar-right">
       <button class="icon-btn">
         <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
@@ -522,11 +522,11 @@
         <a href="{{ route('dashboard.earnings') }}" class="nav-item {{ request()->routeIs('dashboard.earnings') ? 'active' : '' }}">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           Earnings
-          <span class="nav-badge">3</span>
         </a>
-        <a href="#" class="nav-item">
+        <a href="{{ route('dashboard.messages') }}" class="nav-item {{ request()->routeIs('dashboard.messages') ? 'active' : '' }}" id="messagesNavLink">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
           Messages
+          <span class="nav-badge" id="msgUnreadBadge" style="display:none;"></span>
         </a>
         <a href="#" class="nav-item">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
@@ -557,5 +557,79 @@
       @yield('content')
     </div>
   </div>
+
+  {{-- Global unread message counter & notification (polls every 10s) --}}
+  <style>
+    .msg-toast {
+        position: fixed; bottom: 30px; right: 30px; background: #fff;
+        border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+        transform: translateY(100px); opacity: 0;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 9999; pointer-events: none;
+        border: 1px solid #F1F5F9; border-left: 4px solid #E91E63;
+    }
+    .msg-toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .msg-toast-icon {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: #FDF2F8; color: #E91E63;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .msg-toast-content { flex: 1; min-width: 150px; }
+    .msg-toast-title { font-weight: 700; color: #1E293B; font-size: 14px; margin-bottom: 2px; }
+    .msg-toast-desc { font-size: 13px; color: #64748B; }
+    .msg-toast-action {
+        background: #E91E63; color: #fff; font-size: 12px; font-weight: 600;
+        padding: 6px 12px; border-radius: 6px; text-decoration: none; transition: .2s;
+    }
+    .msg-toast-action:hover { background: #d81b60; color: #fff; }
+  </style>
+
+  <div class="msg-toast" id="msgToast">
+      <div class="msg-toast-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+      </div>
+      <div class="msg-toast-content">
+          <div class="msg-toast-title">New Message</div>
+          <div class="msg-toast-desc">You received a new message.</div>
+      </div>
+      <a href="{{ route('dashboard.messages') }}" class="msg-toast-action">View</a>
+  </div>
+
+  <script>
+    (function initUnreadPolling() {
+      var badge = document.getElementById('msgUnreadBadge');
+      if (!badge) return;
+      
+      let lastCount = -1;
+      
+      function checkUnread() {
+        fetch('/chat/unread-count', { headers: { 'Accept': 'application/json' } })
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            if (d.count > 0) {
+              badge.textContent = d.count > 99 ? '99+' : d.count;
+              badge.style.display = '';
+              
+              // Only notify if count increased, it's not the initial load, and we aren't on the chat page
+              if (lastCount !== -1 && d.count > lastCount && !window.location.pathname.includes('/dashboard/messages')) {
+                  var toast = document.getElementById('msgToast');
+                  if (toast) {
+                      toast.classList.add('show');
+                      setTimeout(function() { toast.classList.remove('show'); }, 5000);
+                  }
+              }
+            } else {
+              badge.style.display = 'none';
+            }
+            lastCount = d.count;
+          })
+          .catch(function(){})
+          .finally(function(){ setTimeout(checkUnread, 10000); });
+      }
+      
+      checkUnread();
+    })();
+  </script>
 </body>
 </html>

@@ -16,8 +16,11 @@ class DashboardController extends Controller
     public function bookings()
     {
         $user = Auth::user();
-        $bookings = \App\Models\Booking::where('user_id', Auth::id())
-            ->with(['partner', 'category'])
+        $bookings = \App\Models\Booking::where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('partner_id', $user->id);
+            })
+            ->with(['user', 'partner', 'category'])
             ->orderBy('created_at', 'desc')
             ->get();
         return view('dashboard.bookings', compact('bookings', 'user'));

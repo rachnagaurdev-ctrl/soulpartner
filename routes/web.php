@@ -36,6 +36,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/bookings', [App\Http\Controllers\DashboardController::class, 'bookings'])->name('dashboard.bookings');
     // Email verification send (auth-protected)
     Route::post('/email/send-verification', [App\Http\Controllers\AuthController::class, 'sendVerificationEmail'])->name('email.send-verification');
+    // Chat
+    Route::get('/dashboard/messages',           [App\Http\Controllers\ChatController::class, 'index'])->name('dashboard.messages');
+    Route::post('/chat/send',                   [App\Http\Controllers\ChatController::class, 'send'])->name('chat.send');
+    Route::get('/chat/poll',                    [App\Http\Controllers\ChatController::class, 'poll'])->name('chat.poll');
+    Route::get('/chat/unread-count',            [App\Http\Controllers\ChatController::class, 'unreadCount'])->name('chat.unread');
 });
 
 // Route::get('partners', [App\Http\Controllers\PageController::class, 'partners'])->name('partners');
