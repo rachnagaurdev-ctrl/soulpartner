@@ -107,7 +107,8 @@ public function partners(Request $request)
     $query = \App\Models\User::where('is_admin', 0)
         ->whereIn('iwantto', ['become', 'both'])
         ->where('is_verified', 1)
-        ->where('is_active', 1);
+        ->where('is_active', 1)
+        ->whereNotNull('email_verified_at'); // Only show email-verified users
 
     if ($request->filled('category')) {
         $categories = is_array($request->category) ? $request->category : explode(',', $request->category);

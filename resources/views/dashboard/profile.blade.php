@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 @section('title', 'Edit Partner Profile | Soulmate India')
 @section('content')
       <div class="middle-col">
@@ -8,7 +8,63 @@
             </div>
         @endif
 
+        {{-- Email Verification Banner --}}
+        @if(!auth()->user()->email_verified_at)
+        <div id="emailVerifyBanner" style="
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+            background: linear-gradient(135deg, #fff7ed, #fef3c7);
+            border: 1.5px solid #f59e0b;
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 16px rgba(245,158,11,0.15);
+        ">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:28px; line-height:1;">âš ï¸</span>
+                <div>
+                    <div style="font-weight:700; color:#92400e; font-size:15px; margin-bottom:3px;">Email Not Verified</div>
+                    <div style="font-size:13px; color:#b45309;">Your profile is hidden from other members until you verify your email address.</div>
+                </div>
+            </div>
+            <button type="button" id="sendVerifyBtn" onclick="sendVerificationEmail()" style="
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: #fff;
+                border: none;
+                padding: 11px 24px;
+                border-radius: 50px;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex; align-items: center; gap: 7px;
+                box-shadow: 0 4px 12px rgba(245,158,11,0.35);
+                transition: transform 0.2s;
+                white-space: nowrap;
+            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Send Verification Email
+            </button>
+        </div>
+        <div id="verifyMessage" style="display:none; margin-bottom:16px;"></div>
+        @else
+        <div style="
+            display:flex; align-items:center; gap:12px;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1.5px solid #22c55e;
+            border-radius: 14px;
+            padding: 16px 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 16px rgba(34,197,94,0.12);
+        ">
+            <span style="font-size:24px;">âœ…</span>
+            <div>
+                <div style="font-weight:700; color:#166534; font-size:15px; margin-bottom:2px;">Email Verified</div>
+                <div style="font-size:13px; color:#15803d;">Your email is verified on {{ auth()->user()->email_verified_at->format('d M Y') }}. Your profile is visible to other members.</div>
+            </div>
+        </div>
+        @endif
+
         <form action="{{ route('dashboard.profile.update') }}" method="POST" enctype="multipart/form-data">
+
           @csrf
           @method('PUT')
 
@@ -49,7 +105,7 @@
                 @else
                     <button type="submit" name="set_primary" value="{{ $photo }}" formnovalidate style="position:absolute; top:5px; left:5px; background:rgba(255,255,255,0.8); border:none; padding:2px 5px; font-size:10px; border-radius:4px; cursor:pointer; color:#E91E63; font-weight:bold; line-height: 1;">Set Primary</button>
                 @endif
-                <button type="submit" name="delete_photos[]" value="{{ $photo }}" formnovalidate style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.8); border:none; padding:2px 5px; font-size:10px; border-radius:4px; cursor:pointer; color:#fff; font-weight:bold; line-height: 1;" onclick="return confirm('Delete this photo?')">✕</button>
+                <button type="submit" name="delete_photos[]" value="{{ $photo }}" formnovalidate style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.8); border:none; padding:2px 5px; font-size:10px; border-radius:4px; cursor:pointer; color:#fff; font-weight:bold; line-height: 1;" onclick="return confirm('Delete this photo?')">âœ•</button>
               </div>
               @endforeach
 
@@ -242,7 +298,7 @@
                     
                     <!-- Price Input inside the pill -->
                     <span id="price_input_{{ $category->slug }}" class="category-price-input" style="display: {{ $isChecked ? 'inline-flex' : 'none' }}; align-items: center; background: rgba(255, 255, 255, 0.9); padding: 2px 8px; border-radius: 12px; margin-left: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #fbcfe8;">
-                      <span style="color: #E91E63; font-weight: 700; font-size: 12px; margin-right: 2px;">₹</span>
+                      <span style="color: #E91E63; font-weight: 700; font-size: 12px; margin-right: 2px;">â‚¹</span>
                       <input type="number" name="category_prices[{{ $category->slug }}]" value="{{ $priceValue ? floatval($priceValue) : '' }}" placeholder="{{ floatval($category->prices) }}" style="width: 45px; border: none; background: transparent; outline: none; font-size: 12px; color: #E91E63; font-weight: 700; padding: 0;" onclick="event.preventDefault();" onmousedown="event.stopPropagation();">
                     </span>
                   </span>
@@ -406,7 +462,7 @@
             @php
                 $age = $user->dob ? \Carbon\Carbon::parse($user->dob)->age : 'N/A';
             @endphp
-            <div class="preview-meta">{{ $age }} • {{ $user->height ?? "Height N/A" }} • <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> {{ $user->city ?? 'City N/A' }}</div>
+            <div class="preview-meta">{{ $age }} â€¢ {{ $user->height ?? "Height N/A" }} â€¢ <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> {{ $user->city ?? 'City N/A' }}</div>
             
             <div class="preview-rating">
               <svg width="14" height="14" fill="#FBBF24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
@@ -498,4 +554,47 @@
     });
   </script>
 
+
+  {{-- Email Verification AJAX --}}
+  <script>
+    function sendVerificationEmail() {
+      var btn = document.getElementById('sendVerifyBtn');
+      var msgBox = document.getElementById('verifyMessage');
+      if (!btn) return;
+      btn.disabled = true;
+      btn.innerHTML = 'Sending...';
+      btn.style.opacity = '0.75';
+      fetch('/email/send-verification', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]') ? document.querySelector('meta[name=csrf-token]').getAttribute('content') : '',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        if (msgBox) msgBox.style.display = 'block';
+        if (data.success) {
+          if (msgBox) msgBox.innerHTML = '<div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #22c55e;border-radius:12px;padding:14px 20px;color:#166534;font-size:14px;font-weight:600;">📬 ' + data.message + '</div>';
+          btn.innerHTML = '✅ Email Sent! Check your inbox';
+          btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+          btn.style.boxShadow = '0 4px 12px rgba(34,197,94,0.35)';
+          btn.style.opacity = '1';
+        } else {
+          if (msgBox) msgBox.innerHTML = '<div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:12px;padding:14px 20px;color:#991b1b;font-size:14px;font-weight:600;">⚠️ ' + data.message + '</div>';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.innerHTML = '📧 Send Verification Email';
+        }
+      })
+      .catch(function() {
+        if (msgBox) { msgBox.style.display = 'block'; msgBox.innerHTML = '<div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:12px;padding:14px 20px;color:#991b1b;font-size:14px;font-weight:600;">❌ Network error. Please try again.</div>'; }
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = '📧 Try Again';
+      });
+    }
+  </script>
 @endsection
+

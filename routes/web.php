@@ -18,6 +18,9 @@ Route::post('/api/checkout/process', [App\Http\Controllers\CheckoutController::c
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login');
 Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 
+// Email Verification (public link clicked from email)
+Route::get('/email/verify', [App\Http\Controllers\AuthController::class, 'verifyEmail'])->name('email.verify');
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('dashboard.profile');
@@ -31,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/book-partner/callback', [App\Http\Controllers\BookingController::class, 'callback'])->name('book.callback');
     Route::get('/booking-success', [App\Http\Controllers\BookingController::class, 'success'])->name('booking.success');
     Route::get('/dashboard/bookings', [App\Http\Controllers\DashboardController::class, 'bookings'])->name('dashboard.bookings');
+    // Email verification send (auth-protected)
+    Route::post('/email/send-verification', [App\Http\Controllers\AuthController::class, 'sendVerificationEmail'])->name('email.send-verification');
 });
 
 // Route::get('partners', [App\Http\Controllers\PageController::class, 'partners'])->name('partners');

@@ -183,6 +183,14 @@ class UserResource extends Resource
                 Tables\Columns\ToggleColumn::make('is_verified')
                     ->label('Verified'),
 
+                Tables\Columns\BadgeColumn::make('email_verified_at')
+                    ->label('Email Verified')
+                    ->formatStateUsing(fn ($state) => $state ? '✓ ' . \Carbon\Carbon::parse($state)->format('d M Y') : 'Not Verified')
+                    ->colors([
+                        'success' => fn ($state) => $state !== null,
+                        'warning' => fn ($state) => $state === null,
+                    ]),
+
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
 
@@ -232,6 +240,9 @@ class UserResource extends Resource
                     ->label('Active Users'),
                 TernaryFilter::make('is_verified')
                     ->label('Verified Users'),
+                TernaryFilter::make('email_verified_at')
+                    ->label('Email Verified')
+                    ->nullable(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
