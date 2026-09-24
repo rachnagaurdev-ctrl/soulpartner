@@ -191,15 +191,21 @@
                       </label>
                       <select name="availability[{{$day}}][from]" class="form-control" style="width: 100px; padding: 8px;">
                           @for($i=0; $i<24; $i++)
-                          @php $t = sprintf('%02d:00', $i); @endphp
-                          <option value="{{ $t }}" {{ $fromTime == $t ? 'selected' : '' }}>{{ $t }}</option>
+                          @php 
+                              $t = sprintf('%02d:00', $i); 
+                              $displayT = \Carbon\Carbon::createFromFormat('H:i', $t)->format('h:i A');
+                          @endphp
+                          <option value="{{ $t }}" {{ $fromTime == $t ? 'selected' : '' }}>{{ $displayT }}</option>
                           @endfor
                       </select>
                       <span style="color: #64748B; font-size: 13px;">to</span>
                       <select name="availability[{{$day}}][to]" class="form-control" style="width: 100px; padding: 8px;">
                           @for($i=0; $i<24; $i++)
-                          @php $t = sprintf('%02d:00', $i); @endphp
-                          <option value="{{ $t }}" {{ $toTime == $t ? 'selected' : '' }}>{{ $t }}</option>
+                          @php 
+                              $t = sprintf('%02d:00', $i); 
+                              $displayT = \Carbon\Carbon::createFromFormat('H:i', $t)->format('h:i A');
+                          @endphp
+                          <option value="{{ $t }}" {{ $toTime == $t ? 'selected' : '' }}>{{ $displayT }}</option>
                           @endfor
                       </select>
                   </div>
@@ -220,21 +226,25 @@
               
               @php
                   $userCategories = explode(',', old('category', $user->category ?? ''));
+                  $userCategoryPrices = old('category_prices', is_array($user->category_prices) ? $user->category_prices : json_decode($user->category_prices, true) ?? []);
               @endphp
-              <div class="pill-group">
+              <div class="pill-group" style="display: flex; flex-wrap: wrap; gap: 10px;">
                 @foreach($categories as $category)
-                <label>
-                  <input type="checkbox" name="category[]" value="{{ $category->slug }}" class="pill-checkbox" {{ in_array($category->slug, $userCategories) ? 'checked' : '' }}>
-                  <span class="pill-label">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: {{ in_array($category->slug, $userCategories) ? 'block' : 'none' }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    {{ $category->name }} 
-                    (
-                      @if($category->prices)
-                        {{ number_format($category->prices, 0) }}
-                      @else
-                        N/A
-                      @endif
-                    )
+                @php
+                    $isChecked = in_array($category->slug, $userCategories);
+                    $priceValue = $userCategoryPrices[$category->slug] ?? $category->prices;
+                @endphp
+                <label class="category-pill-wrapper" style="margin: 0; cursor: pointer;">
+                  <input type="checkbox" name="category[]" value="{{ $category->slug }}" class="pill-checkbox" {{ $isChecked ? 'checked' : '' }} onchange="togglePriceInput(this, 'price_input_{{ $category->slug }}')">
+                  <span class="pill-label" style="display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: {{ $isChecked ? 'inline-block' : 'none' }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    {{ $category->name }}
+                    
+                    <!-- Price Input inside the pill -->
+                    <span id="price_input_{{ $category->slug }}" class="category-price-input" style="display: {{ $isChecked ? 'inline-flex' : 'none' }}; align-items: center; background: rgba(255, 255, 255, 0.9); padding: 2px 8px; border-radius: 12px; margin-left: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #fbcfe8;">
+                      <span style="color: #E91E63; font-weight: 700; font-size: 12px; margin-right: 2px;">₹</span>
+                      <input type="number" name="category_prices[{{ $category->slug }}]" value="{{ $priceValue ? floatval($priceValue) : '' }}" placeholder="{{ floatval($category->prices) }}" style="width: 45px; border: none; background: transparent; outline: none; font-size: 12px; color: #E91E63; font-weight: 700; padding: 0;" onclick="event.preventDefault();" onmousedown="event.stopPropagation();">
+                    </span>
                   </span>
                 </label>
                 @endforeach
@@ -389,31 +399,53 @@
           @endif
           <div class="preview-content">
             <h3 class="preview-name">
-              {{ $user->name }}
+              {{ $user->name ?? 'Your Name' }}
               <svg width="18" height="18" fill="#E91E63" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </h3>
-            <div class="preview-meta">{{ $user->age ?? 26 }} • {{ $user->height ?? "5'4\"" }} • <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> {{ $user->city ?? 'Delhi' }}</div>
+            
+            @php
+                $age = $user->dob ? \Carbon\Carbon::parse($user->dob)->age : 'N/A';
+            @endphp
+            <div class="preview-meta">{{ $age }} • {{ $user->height ?? "Height N/A" }} • <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> {{ $user->city ?? 'City N/A' }}</div>
             
             <div class="preview-rating">
               <svg width="14" height="14" fill="#FBBF24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-              4.8 <span style="color: #94A3B8; font-weight: normal;">(120 Reviews)</span>
+              New Partner <span style="color: #94A3B8; font-weight: normal;">(0 Reviews)</span>
             </div>
 
             <div class="preview-tags">
-              @foreach($user->interests ?? ['Movie', 'Shopping', 'Dining', 'Travel'] as $tag)
+              @php
+                  $interests = is_array($user->interests) ? $user->interests : (is_string($user->interests) ? json_decode($user->interests, true) : []);
+              @endphp
+              @forelse($interests ?? [] as $tag)
                 <span class="preview-tag">{{ $tag }}</span>
-              @endforeach
+              @empty
+                <span class="preview-tag" style="color:#94A3B8; background:transparent; border:none; padding:0;">No interests added</span>
+              @endforelse
             </div>
 
             <div class="preview-desc">
-              Fun, genuine and 100% real. Let's create beautiful memories together.
+              {{ $user->bio ?? 'No bio provided yet.' }}
             </div>
 
             <div class="preview-details">
-              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> {{ $user->gender ?? 'Female' }}</div>
-              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> 18 - 35</div>
-              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg> Hindi, English</div>
-              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Mon - Sun</div>
+              @php
+                  $langs = is_array($user->languages) ? implode(', ', $user->languages) : (is_string($user->languages) ? implode(', ', json_decode($user->languages, true) ?? []) : 'Not specified');
+                  $langs = empty($langs) ? 'Not specified' : $langs;
+                  
+                  $availDays = [];
+                  $availabilities = is_array($user->availability) ? $user->availability : (json_decode($user->availability, true) ?? []);
+                  foreach($availabilities as $day => $data) {
+                      if(isset($data['active']) && $data['active']) {
+                          $availDays[] = $day;
+                      }
+                  }
+                  $availString = count($availDays) > 0 ? count($availDays) . ' Days/Week' : 'Not specified';
+              @endphp
+              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> {{ ucfirst($user->gender ?? 'Not specified') }}</div>
+              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> Age: {{ $age }}</div>
+              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg> {{ \Illuminate\Support\Str::limit($langs, 20) }}</div>
+              <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> {{ $availString }}</div>
               <div style="grid-column: span 2;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Within 1 hour</div>
             </div>
           </div>
@@ -440,12 +472,25 @@
   </div>
 
   <script>
+    function togglePriceInput(checkbox, inputId) {
+        const inputSpan = document.getElementById(inputId);
+        if(checkbox.checked) {
+            inputSpan.style.display = 'inline-flex';
+            // Auto focus the input when checked
+            setTimeout(() => {
+                inputSpan.querySelector('input').focus();
+            }, 50);
+        } else {
+            inputSpan.style.display = 'none';
+        }
+    }
+
     // Add simple toggle logic for the pill checkboxes UI
     document.querySelectorAll('.pill-checkbox').forEach(checkbox => {
       checkbox.addEventListener('change', function() {
         const icon = this.nextElementSibling.querySelector('svg');
         if(this.checked) {
-          icon.style.display = 'block';
+          icon.style.display = 'inline-block';
         } else {
           icon.style.display = 'none';
         }

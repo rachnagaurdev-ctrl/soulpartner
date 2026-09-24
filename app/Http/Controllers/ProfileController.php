@@ -59,6 +59,8 @@ class ProfileController extends Controller
             'is_active' => 'nullable|boolean',
             'category' => 'nullable|array',
             'category.*' => 'exists:categories,slug',
+            'category_prices' => 'nullable|array',
+            'category_prices.*' => 'nullable|numeric|min:0',
             'bio' => 'nullable|string|max:1000',
             'height' => 'nullable|string|max:255',
             'religion' => 'nullable|string|max:255',
@@ -74,9 +76,21 @@ class ProfileController extends Controller
         ]);
 
         if (isset($validatedData['category'])) {
-            $validatedData['category'] = implode(',', $validatedData['category']);
+            $selectedCategories = $validatedData['category'];
+            $validatedData['category'] = implode(',', $selectedCategories);
+            
+            if (isset($validatedData['category_prices'])) {
+                $filteredPrices = [];
+                foreach ($selectedCategories as $catSlug) {
+                    if (isset($validatedData['category_prices'][$catSlug]) && $validatedData['category_prices'][$catSlug] !== '') {
+                        $filteredPrices[$catSlug] = (float)$validatedData['category_prices'][$catSlug];
+                    }
+                }
+                $validatedData['category_prices'] = $filteredPrices;
+            }
         } else {
             $validatedData['category'] = null;
+            $validatedData['category_prices'] = null;
         }
 
         if ($request->hasFile('profile_photos')) {

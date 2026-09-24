@@ -15,7 +15,7 @@ class Category extends Model
         return LogOptions::defaults()->logFillable()->setDescriptionForEvent(fn(string $eventName) => "Category {$eventName}");
     }
 
-    protected $fillable = ['name', 'slug','description', 'image', 'icon', 'prices', 'min_price', 'max_price', 'hours', 'minutes'];
+    protected $fillable = ['name', 'slug','description', 'image', 'icon', 'prices', 'min_price', 'max_price', 'hours', 'minutes', 'pricing_type'];
 
     public function posts()
     {

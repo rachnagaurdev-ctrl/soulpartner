@@ -105,7 +105,9 @@ public function getbyid($id)
 public function partners(Request $request)
 {
     $query = \App\Models\User::where('is_admin', 0)
-        ->whereIn('iwantto', ['become', 'both']);
+        ->whereIn('iwantto', ['become', 'both'])
+        ->where('is_verified', 1)
+        ->where('is_active', 1);
 
     if ($request->filled('category')) {
         $categories = is_array($request->category) ? $request->category : explode(',', $request->category);
@@ -151,9 +153,17 @@ public function partners(Request $request)
 
 public function partnerProfile($profile_id)
 {
-    $partner = \App\Models\User::where('profile_id', $profile_id)->firstOrFail();
+    $partner = \App\Models\User::where('profile_id', $profile_id)
+        ->where('is_active', 1)
+        ->firstOrFail();
+        
+    $bookedSlots = \App\Models\Booking::where('partner_id', $partner->id)
+        ->where('booking_date', '>=', date('Y-m-d'))
+        ->where('status', 'confirmed')
+        ->get(['booking_date', 'booking_time', 'end_time']);
+        
     $razorpayKey = env('RAZORPAY_KEY_ID');
-    return view('partners-profile', compact('partner', 'razorpayKey'));
+    return view('partners-profile', compact('partner', 'razorpayKey', 'bookedSlots'));
 }
 
 }

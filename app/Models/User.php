@@ -35,6 +35,7 @@ class User extends Authenticatable implements FilamentUser
         'country',
         'iwantto',
         'category',
+        'category_prices',
         'price_per_hour',
         'profile_image',
         'bio',
@@ -88,6 +89,7 @@ class User extends Authenticatable implements FilamentUser
             'looking_for' => 'array',
             'profile_photos' => 'array',
             'availability' => 'array',
+            'category_prices' => 'array',
         ];
     }
 

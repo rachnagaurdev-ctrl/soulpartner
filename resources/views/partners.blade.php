@@ -103,10 +103,15 @@
                             <h3 class="filters-title">Filters</h3>
                             <a href="{{ route('partners') }}" class="clear-filters-btn">Clear All</a>
                         </div>
-                        <div class="sidebar-header-mobile">
-                            <h3>Filters</h3>
+                        <style>
+                            @media(min-width: 992px) {
+                                .sidebar-header-mobile { display: none !important; }
+                            }
+                        </style>
+                        <div class="sidebar-header-mobile" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="margin: 0;">Filters</h3>
                             <button type="button" class="close-filter-btn" id="closeMobileFilterBtn"
-                                aria-label="Close filters">×</button>
+                                aria-label="Close filters" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #1e293b;">&times;</button>
                         </div>
 
                         <!-- Category Filter -->
@@ -321,8 +326,12 @@
                 </svg> {{ $partner->city }}</span>
         </div>
         <div class="partner-tags">
-            @foreach(explode(',', $partner->category) as $cat)
-            <span class="tag">{{ trim($cat) }}</span>
+            @php
+                $catSlugs = is_string($partner->category) ? explode(',', $partner->category) : [];
+                $tagCategories = \App\Models\Category::whereIn('slug', $catSlugs)->get();
+            @endphp
+            @foreach($tagCategories as $tagCat)
+            <span class="tag">{{ $tagCat->name }}</span>
             @endforeach
         </div>
         <div class="partner-price">

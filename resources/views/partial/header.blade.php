@@ -1,15 +1,29 @@
  <header class="header">
     <div class="container nav">
-      <a class="brand" href="#"><img src="{{asset('assets/images/logo.jpeg')}}" alt="Soulmate India"></a>
+      <a class="brand" href="{{ url('/') }}">
+        @if(\App\Models\Setting::get('logo'))
+          <img src="{{ get_storage_url(\App\Models\Setting::get('logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
+        @else
+          <img src="{{asset('assets/images/logo.jpeg')}}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
+        @endif
+      </a>
       <nav class="navlinks" id="navlinks">
-        <a class="active" href="#home">Home</a>
-        <a href="partners.html">Discover</a>
-        <a href="#categories">Categories</a>
-        <a href="#membership">Membership</a>
-        <a href="#earning">Earn With Us</a>
-        <!-- <a href="#how">How It Works</a> -->
-        <a href="about-us.html">About Us</a>
-        <a href="contact-us.html">Contact</a>
+        @php
+            $headerNav = \App\Models\Setting::get('header_nav', []);
+        @endphp
+        @if(is_array($headerNav) && count($headerNav) > 0)
+            @foreach($headerNav as $navItem)
+                <a href="{{ $navItem['url'] ?? '#' }}" target="{{ !empty($navItem['open_in_new_tab']) ? '_blank' : '_self' }}">{{ $navItem['label'] ?? '' }}</a>
+            @endforeach
+        @else
+            <a class="active" href="{{ url('/') }}#home">Home</a>
+            <a href="partners.html">Discover</a>
+            <a href="{{ url('/') }}#categories">Categories</a>
+            <a href="{{ url('/') }}#membership">Membership</a>
+            <a href="{{ url('/') }}#earning">Earn With Us</a>
+            <a href="about-us.html">About Us</a>
+            <a href="contact-us.html">Contact</a>
+        @endif
       </nav>
       <div class="actions">
         <!-- <button class="search-icon" aria-label="Search">⌕</button> -->

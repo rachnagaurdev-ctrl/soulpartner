@@ -4,60 +4,71 @@
     <div class="container">
       <!-- Top Row: Logo, Nav, Socials -->
       <div class="footer-top-row">
-        <a href="index.html" class="footer-brand-logo">
-          <img src="{{asset('assets/images/logo.jpeg')}}" alt="Soulmate India Logo">
+        <a href="{{ url('/') }}" class="footer-brand-logo">
+          @if(\App\Models\Setting::get('logo'))
+            <img src="{{ get_storage_url(\App\Models\Setting::get('logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
+          @else
+            <img src="{{asset('assets/images/logo.jpeg')}}" alt="Soulmate India Logo">
+          @endif
         </a>
 
         <nav class="footer-nav-menu" aria-label="Footer Navigation">
-          <a class="active" href="index.html#home">Home</a>
-          <a href="partners.html">Discover</a>
-          <a href="index.html#categories">Categories</a>
-          <a href="index.html#membership">Membership</a>
-          <a href="index.html#how">How It Works</a>
-          <a href="about-us.html">About Us</a>
-          <a href="contact-us.html">Contact</a>
+            @php
+                $footerNavSetting = \App\Models\Setting::get('footer_nav', []);
+            @endphp
+            @if(is_array($footerNavSetting) && count($footerNavSetting) > 0)
+                @foreach($footerNavSetting as $col)
+                    @if(isset($col['links']) && is_array($col['links']))
+                        @foreach($col['links'] as $link)
+                            <a href="{{ $link['url'] ?? '#' }}">{{ $link['label'] ?? '' }}</a>
+                        @endforeach
+                    @endif
+                @endforeach
+            @else
+              <a class="active" href="index.html#home">Home</a>
+              <a href="partners.html">Discover</a>
+              <a href="index.html#categories">Categories</a>
+              <a href="index.html#membership">Membership</a>
+              <a href="index.html#how">How It Works</a>
+              <a href="about-us.html">About Us</a>
+              <a href="contact-us.html">Contact</a>
+            @endif
         </nav>
 
         <div class="footer-social-icons">
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn"
-            aria-label="Facebook">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-            </svg>
+          @if(\App\Models\Setting::get('social_facebook'))
+          <a href="{{ \App\Models\Setting::get('social_facebook') }}" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="Facebook">
+            <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
           </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn"
-            aria-label="Instagram">
-            <svg viewBox="0 0 24 24">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-            </svg>
+          @endif
+          @if(\App\Models\Setting::get('social_instagram'))
+          <a href="{{ \App\Models\Setting::get('social_instagram') }}" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="Instagram">
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
           </a>
-          <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn"
-            aria-label="X (Twitter)">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z">
-              </path>
-            </svg>
+          @endif
+          @if(\App\Models\Setting::get('social_twitter'))
+          <a href="{{ \App\Models\Setting::get('social_twitter') }}" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="X (Twitter)">
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
           </a>
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn"
-            aria-label="YouTube">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z">
-              </path>
-              <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#0c1022"></polygon>
-            </svg>
+          @endif
+          @if(\App\Models\Setting::get('social_youtube'))
+          <a href="{{ \App\Models\Setting::get('social_youtube') }}" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="YouTube">
+            <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#0c1022"></polygon></svg>
           </a>
+          @endif
+          @if(\App\Models\Setting::get('social_linkedin'))
+          <a href="{{ \App\Models\Setting::get('social_linkedin') }}" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="LinkedIn">
+             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          </a>
+          @endif
         </div>
       </div>
 
       <!-- Bottom Row: Copyright & Tagline -->
       <div class="footer-bottom-row">
-        <p class="footer-copyright">&copy; 2025 Soulmate India. All rights reserved.</p>
+        <p class="footer-copyright">{{ \App\Models\Setting::get('copyright_text', '© ' . date('Y') . ' Soulmate India. All rights reserved.') }}</p>
         <p class="footer-tagline-script">
-          Because every moment is better together <span class="script-heart">♡</span>
+          {{ \App\Models\Setting::get('footer_tagline', 'Because every moment is better together') }} <span class="script-heart">♡</span>
         </p>
       </div>
     </div>

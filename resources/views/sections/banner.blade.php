@@ -7,6 +7,7 @@
         </div>
         <div class="hero-tag">{!! $data['tagline'] ?? '' !!}</div>
       </div>
+
       @if(isset($data['filter_section']) && !empty($data['filter_section']) && $data['filter_section'] == 'yes')
         @php
           /* --- Categories from DB --- */

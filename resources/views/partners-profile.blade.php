@@ -3,7 +3,7 @@
      <div class="container">
             <!-- Back to Search Breadcrumb -->
             <div class="profile-back-bar">
-                <a href="partners.html" class="back-link">
+                <a href="/partners" class="back-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                         stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -105,14 +105,18 @@
 
                         <!-- Companion Tags -->
                         <div class="profile-tags-row">
-                            @foreach(explode(',', $partner->category) as $cat)
-                            <span class="tag-pill">{{ trim($cat) }}</span>
+                            @php
+                                $catSlugs = is_string($partner->category) ? explode(',', $partner->category) : [];
+                                $tagCategories = \App\Models\Category::whereIn('slug', $catSlugs)->get();
+                            @endphp
+                            @foreach($tagCategories as $tagCat)
+                            <span class="tag-pill">{{ $tagCat->name }}</span>
                             @endforeach
                         </div>
 
                         <!-- Bio Highlight / Quote -->
                         <p class="profile-tagline">
-                            "Fun, genuine and 100% real. Let's create beautiful memories together."
+                            "{{ $partner->bio ?? 'No bio provided yet.' }}"
                         </p>
 
                         <!-- Specification Grid (2 cols x 3 rows) -->
@@ -170,17 +174,64 @@
                                 </div>
                                 <div class="spec-content">
                                     <span class="spec-label">Languages</span>
-                                    <strong class="spec-value">Hindi, English</strong>
+                                    <strong class="spec-value">
+                                        @php
+                                            $langs = is_array($partner->languages) ? implode(', ', $partner->languages) : (is_string($partner->languages) ? implode(', ', json_decode($partner->languages, true) ?? []) : 'Not specified');
+                                        @endphp
+                                        {{ empty($langs) ? 'Not specified' : $langs }}
+                                    </strong>
                                 </div>
                             </div>
-
+                                         <style>
+                                .avail-day-pill {
+                                    position: relative;
+                                    display: inline-block;
+                                    border-bottom: 1px dotted #d80b76;
+                                    cursor: help;
+                                    color: #1e293b;
+                                    font-weight: 500;
+                                }
+                                .avail-day-pill .custom-tooltip {
+                                    visibility: hidden;
+                                    width: max-content;
+                                    background-color: #1e293b;
+                                    color: #fff;
+                                    text-align: center;
+                                    border-radius: 6px;
+                                    padding: 6px 10px;
+                                    position: absolute;
+                                    z-index: 10;
+                                    bottom: 125%;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    opacity: 0;
+                                    transition: opacity 0.3s;
+                                    font-size: 12px;
+                                    font-weight: normal;
+                                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                                }
+                                .avail-day-pill .custom-tooltip::after {
+                                    content: "";
+                                    position: absolute;
+                                    top: 100%;
+                                    left: 50%;
+                                    margin-left: -5px;
+                                    border-width: 5px;
+                                    border-style: solid;
+                                    border-color: #1e293b transparent transparent transparent;
+                                }
+                                .avail-day-pill:hover .custom-tooltip {
+                                    visibility: visible;
+                                    opacity: 1;
+                                }
+                            </style>
                             <div class="spec-item">
         <div class="spec-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6d6b78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
         </div>
         <div class="spec-content">
             <span class="spec-label">Availability</span>
-            <strong class="spec-value">
+            <strong class="spec-value" style="display: flex; flex-wrap: wrap; gap: 6px;">
                 @php
                     $activeDays = [];
                     if (is_array($partner->availability)) {
@@ -188,7 +239,11 @@
                             if (isset($partner->availability[$day]["active"]) && $partner->availability[$day]["active"]) {
                                 $from = $partner->availability[$day]["from"] ?? "";
                                 $to = $partner->availability[$day]["to"] ?? "";
-                                $activeDays[] = "<span title=\"$from - $to\" style=\"border-bottom:1px dotted #888; cursor:help;\">$day</span>";
+                                
+                                $fromFormatted = $from ? date('h:i A', strtotime($from)) : '';
+                                $toFormatted = $to ? date('h:i A', strtotime($to)) : '';
+                                
+                                $activeDays[] = "<span class=\"avail-day-pill\">$day<span class=\"custom-tooltip\">$fromFormatted - $toFormatted</span></span>";
                             }
                         }
                     }
@@ -226,13 +281,17 @@
                                 @php
                                     $catSlugs = is_string($partner->category) ? explode(",", $partner->category) : [];
                                     $categories = \App\Models\Category::whereIn("slug", $catSlugs)->get();
+                                    $partnerPrices = is_string($partner->category_prices) ? json_decode($partner->category_prices, true) : ($partner->category_prices ?? []);
                                 @endphp
                                 <div class="booking-field">
                                     <label for="bookingService">Select Service</label>
                                     <div class="input-icon-wrap">
                                         <select id="bookingService" onchange="updateBookingForm()">
                                             @foreach($categories as $cat)
-                                                <option value="{{ $cat->id }}" data-pricing="{{ $cat->pricing_type }}" data-price="{{ $cat->prices }}">{{ $cat->name }}</option>
+                                                @php
+                                                    $customPrice = $partnerPrices[$cat->slug] ?? $cat->prices;
+                                                @endphp
+                                                <option value="{{ $cat->id }}" data-pricing="{{ $cat->pricing_type }}" data-price="{{ $customPrice }}" data-hours="{{ $cat->hours ?? 0 }}" data-minutes="{{ $cat->minutes ?? 0 }}">{{ $cat->name }}</option>
                                             @endforeach
                                         </select>
                                         <span class="input-icon">
@@ -254,7 +313,15 @@
                                 <div class="booking-field hourly-field">
                                     <label for="bookingStartTime">Start Time</label>
                                     <div class="input-icon-wrap">
-                                        <input type="time" id="bookingStartTime" value="18:00">
+                                        <select id="bookingStartTime">
+                                            @for($i=0; $i<24; $i++)
+                                                @php 
+                                                    $t = sprintf('%02d:00', $i); 
+                                                    $displayT = \Carbon\Carbon::createFromFormat('H:i', $t)->format('h:i A');
+                                                @endphp
+                                                <option value="{{ $t }}" {{ $t == '18:00' ? 'selected' : '' }}>{{ $displayT }}</option>
+                                            @endfor
+                                        </select>
                                         <span class="input-icon">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                                         </span>
@@ -264,7 +331,15 @@
                                 <div class="booking-field hourly-field">
                                     <label for="bookingEndTime">End Time</label>
                                     <div class="input-icon-wrap">
-                                        <input type="time" id="bookingEndTime" value="20:00">
+                                        <select id="bookingEndTime">
+                                            @for($i=0; $i<24; $i++)
+                                                @php 
+                                                    $t = sprintf('%02d:00', $i); 
+                                                    $displayT = \Carbon\Carbon::createFromFormat('H:i', $t)->format('h:i A');
+                                                @endphp
+                                                <option value="{{ $t }}" {{ $t == '20:00' ? 'selected' : '' }}>{{ $displayT }}</option>
+                                            @endfor
+                                        </select>
                                         <span class="input-icon">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                                         </span>
@@ -272,14 +347,32 @@
                                 </div>
 
                                 <div class="booking-field package-field" style="display:none;">
-                                    <label for="bookingTime">Select Time</label>
+                                    <label for="bookingTime">Select Start Time</label>
                                     <div class="input-icon-wrap">
-                                        <input type="time" id="bookingTime" value="18:00">
+                                        <select id="bookingTime">
+                                            @for($i=0; $i<24; $i++)
+                                                @php 
+                                                    $t = sprintf('%02d:00', $i); 
+                                                    $displayT = \Carbon\Carbon::createFromFormat('H:i', $t)->format('h:i A');
+                                                @endphp
+                                                <option value="{{ $t }}" {{ $t == '18:00' ? 'selected' : '' }}>{{ $displayT }}</option>
+                                            @endfor
+                                        </select>
                                         <span class="input-icon">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                                         </span>
                                     </div>
                                 </div>
+                                <div class="booking-field package-field" style="display:none; margin-top:15px;">
+                                    <label>Calculated End Time</label>
+                                    <div class="input-icon-wrap">
+                                        <input type="text" id="packageEndTime" disabled style="background-color: #f8fafc; font-weight: 500; color: #d80b76;">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        </span>
+                                    </div>
+                                </div>
+
 
                                 <div class="booking-price-display" style="text-align: center; margin: 15px 0;">
                                     <span style="font-size: 14px; color: #6d6b78;">Total Price:</span>
@@ -328,70 +421,27 @@
                         <div class="about-card-box">
                             <h2 class="section-title">About Me</h2>
                             <p class="about-bio-text">
-                                Hi! I'm Priya, a friendly and easy-going person who loves meeting new people and
-                                exploring new places. I enjoy movies, good food, shopping, and traveling. I believe in
-                                making every moment special and I'm here to connect with like-minded people who value
-                                genuine companionship.
+                                {{ $partner->bio ?? 'No bio provided yet.' }}
                             </p>
 
-                            <!-- 4 Personality Badges -->
+                            <!-- Interests / Personality Badges -->
                             <div class="personality-badges-grid">
+                                @php
+                                    $interests = is_array($partner->interests) ? $partner->interests : (is_string($partner->interests) ? json_decode($partner->interests, true) : []);
+                                @endphp
+                                @foreach($interests ?? [] as $interest)
                                 <div class="personality-pill">
                                     <div class="vibe-icon-wrap">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path
-                                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
-                                            </path>
+                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                         </svg>
                                     </div>
                                     <div class="vibe-text">
-                                        <strong>Friendly</strong>
-                                        <span>&amp; Warm</span>
+                                        <strong>{{ $interest }}</strong>
                                     </div>
                                 </div>
-
-                                <div class="personality-pill">
-                                    <div class="vibe-icon-wrap">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                    <div class="vibe-text">
-                                        <strong>Well</strong>
-                                        <span>Spoken</span>
-                                    </div>
-                                </div>
-
-                                <div class="personality-pill">
-                                    <div class="vibe-icon-wrap">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polygon
-                                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                                            </polygon>
-                                        </svg>
-                                    </div>
-                                    <div class="vibe-text">
-                                        <strong>Adventurous</strong>
-                                        <span>&amp; Fun</span>
-                                    </div>
-                                </div>
-
-                                <div class="personality-pill">
-                                    <div class="vibe-icon-wrap">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="vibe-text">
-                                        <strong>Respectful</strong>
-                                        <span>&amp; Professional</span>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
                         </div>
 
@@ -402,26 +452,17 @@
                                 <a href="#galleryThumbs" class="view-all-link">View All →</a>
                             </div>
                             <div class="gallery-strip">
-                                <div class="gallery-item-thumb">
-                                    <img src="assets/images/partners/priya.jpg" alt="Priya gallery photo 1"
-                                        loading="lazy">
-                                </div>
-                                <div class="gallery-item-thumb">
-                                    <img src="assets/images/partners/priya-gallery-2.jpg" alt="Priya gallery photo 2"
-                                        loading="lazy">
-                                </div>
-                                <div class="gallery-item-thumb">
-                                    <img src="assets/images/partners/priya-gallery-3.jpg" alt="Priya gallery photo 3"
-                                        loading="lazy">
-                                </div>
-                                <div class="gallery-item-thumb">
-                                    <img src="assets/images/partners/priya-gallery-4.jpg" alt="Priya gallery photo 4"
-                                        loading="lazy">
-                                </div>
-                                <div class="gallery-item-thumb">
-                                    <img src="assets/images/partners/priya-gallery-5.jpg" alt="Priya gallery photo 5"
-                                        loading="lazy">
-                                </div>
+                                @if(is_array($partner->profile_photos))
+                                    @foreach($partner->profile_photos as $photo)
+                                    <div class="gallery-item-thumb">
+                                        <img src="{{ get_media_url($photo) }}" alt="{{ $partner->name }} gallery photo" loading="lazy">
+                                    </div>
+                                    @endforeach
+                                @else
+                                    <div class="gallery-item-thumb">
+                                        <img src="{{ get_media_url($partner->profile_image) }}" alt="{{ $partner->name }} gallery photo" loading="lazy">
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -455,8 +496,12 @@
         @php
             $catSlugs = is_string($partner->category) ? explode(",", $partner->category) : [];
             $categories = \App\Models\Category::whereIn("slug", $catSlugs)->get();
+            $partnerPrices = is_string($partner->category_prices) ? json_decode($partner->category_prices, true) : ($partner->category_prices ?? []);
         @endphp
         @foreach($categories as $cat)
+        @php
+            $customPrice = $partnerPrices[$cat->slug] ?? $cat->prices;
+        @endphp
         <div class="service-price-card">
             <div class="service-icon-box">
                 @if($cat->icon)
@@ -467,7 +512,12 @@
             </div>
             <h4 class="service-card-title">{{ $cat->name }}</h4>
             <div class="service-card-rate">
-                <span class="rate-amount">₹{{ number_format($partner->price_per_hour ?? 0, 0) }}</span> <span class="rate-unit">/ hour</span>
+                <span class="rate-amount">₹{{ number_format($customPrice, 0) }}</span> 
+                @if($cat->pricing_type == 'hourly')
+                    <span class="rate-unit">/ hour</span>
+                @else
+                    <span class="rate-unit">/ session</span>
+                @endif
             </div>
         </div>
         @endforeach
@@ -628,6 +678,39 @@
         </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- Custom Alert Modal -->
+<div id="customAlertModal" class="custom-alert-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease;">
+    <div class="custom-alert-box" style="background: #fff; padding: 25px 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateY(-20px); transition: transform 0.3s ease;">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: #FDF2F8; color: #E91E63; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <h3 style="margin: 0 0 10px; color: #1E293B; font-size: 18px; font-weight: 700;">Notice</h3>
+        <p id="customAlertMessage" style="margin: 0 0 20px; color: #64748B; font-size: 15px; line-height: 1.5;"></p>
+        <button type="button" onclick="closeCustomAlert()" style="background: #E91E63; color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s;">Got it</button>
+    </div>
+</div>
+<script>
+function showCustomAlert(message) {
+    const modal = document.getElementById('customAlertModal');
+    const msgEl = document.getElementById('customAlertMessage');
+    const box = modal.querySelector('.custom-alert-box');
+    msgEl.innerText = message;
+    modal.style.display = 'flex';
+    // Trigger reflow
+    void modal.offsetWidth;
+    modal.style.opacity = '1';
+    box.style.transform = 'translateY(0)';
+}
+function closeCustomAlert() {
+    const modal = document.getElementById('customAlertModal');
+    const box = modal.querySelector('.custom-alert-box');
+    modal.style.opacity = '0';
+    box.style.transform = 'translateY(-20px)';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+</script>
 <script>
 function calculatePrice() {
     var select = document.getElementById('bookingService');
@@ -653,7 +736,32 @@ function calculatePrice() {
         } else {
             amount = 0;
         }
+    } else if (pricingType === 'package') {
+        var pkgHours = parseInt(option.getAttribute('data-hours')) || 0;
+        var pkgMins = parseInt(option.getAttribute('data-minutes')) || 0;
+        var startTime = document.getElementById('bookingTime').value;
+        
+        if (startTime) {
+            var start = new Date('1970-01-01T' + startTime);
+            start.setHours(start.getHours() + pkgHours);
+            start.setMinutes(start.getMinutes() + pkgMins);
+            
+            var endH = start.getHours();
+            var endM = start.getMinutes();
+            var ampm = endH >= 12 ? 'PM' : 'AM';
+            endH = endH % 12;
+            endH = endH ? endH : 12;
+            endH = endH < 10 ? '0' + endH : endH;
+            endM = endM < 10 ? '0' + endM : endM;
+            
+            var displayEnd = endH + ':' + endM + ' ' + ampm;
+            var endStr = start.getHours().toString().padStart(2, '0') + ':' + start.getMinutes().toString().padStart(2, '0');
+            
+            document.getElementById('packageEndTime').value = displayEnd;
+            document.getElementById('packageEndTime').setAttribute('data-val', endStr);
+        }
     }
+    
     document.getElementById('calculatedPriceDisplay').innerText = '₹' + amount;
 }
 
@@ -677,6 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('bookingStartTime').addEventListener('change', calculatePrice);
     document.getElementById('bookingEndTime').addEventListener('change', calculatePrice);
     document.getElementById('bookingDate').addEventListener('change', calculatePrice);
+    document.getElementById('bookingTime').addEventListener('change', calculatePrice);
 });
 
 var partnerAvailability = @json($partner->availability ?? []);
@@ -700,15 +809,46 @@ function validateAvailability(dateStr, startStr, endStr) {
         return { valid: false, message: 'Partner is not available on ' + dayName };
     }
     
+    var format12 = function(t) {
+        if (!t) return t;
+        var p = t.split(':');
+        var h = parseInt(p[0], 10);
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        h = h ? h : 12;
+        h = h < 10 ? '0' + h : h;
+        return h + ':' + p[1] + ' ' + ampm;
+    };
+    
     if (startStr && dayAvail.from && dayAvail.to) {
         if (startStr < dayAvail.from || startStr > dayAvail.to) {
-            return { valid: false, message: 'Partner is only available from ' + dayAvail.from + ' to ' + dayAvail.to + ' on ' + dayName };
+            return { valid: false, message: 'Partner is only available from ' + format12(dayAvail.from) + ' to ' + format12(dayAvail.to) + ' on ' + dayName };
         }
     }
     
     if (endStr && dayAvail.from && dayAvail.to) {
         if (endStr < dayAvail.from || endStr > dayAvail.to) {
-            return { valid: false, message: 'Partner is only available from ' + dayAvail.from + ' to ' + dayAvail.to + ' on ' + dayName };
+            return { valid: false, message: 'Partner is only available from ' + format12(dayAvail.from) + ' to ' + format12(dayAvail.to) + ' on ' + dayName };
+        }
+    }
+    
+    // Check against existing confirmed bookings to prevent double-booking
+    var bookedSlots = @json($bookedSlots ?? []);
+    var reqStart = startStr;
+    var reqEnd = endStr || startStr;
+    var rEnd = (reqEnd === reqStart) ? reqStart + ":01" : reqEnd;
+    
+    for (var i = 0; i < bookedSlots.length; i++) {
+        var b = bookedSlots[i];
+        if (b.booking_date === dateStr) {
+            var bStart = b.booking_time.substring(0, 5); // "18:00:00" -> "18:00"
+            var bEnd = b.end_time ? b.end_time.substring(0, 5) : bStart;
+            var bkEnd = (bStart === bEnd) ? bStart + ":01" : bEnd;
+            
+            // Overlap condition
+            if (reqStart < bkEnd && rEnd > bStart) {
+                return { valid: false, message: 'The partner is already booked for this time slot (' + format12(bStart) + ' - ' + format12(bEnd) + ').' };
+            }
         }
     }
     
@@ -718,6 +858,16 @@ function validateAvailability(dateStr, startStr, endStr) {
 document.getElementById('bookNowBtn').addEventListener('click', function(e) {
     e.preventDefault();
     @auth
+        @if(auth()->user()->role === 'partner')
+            showCustomAlert("Partners are not allowed to book other partners.");
+            return;
+        @endif
+        
+        @if(auth()->id() === $partner->id)
+            showCustomAlert("You cannot book yourself.");
+            return;
+        @endif
+
         var select = document.getElementById('bookingService');
         var option = select.options[select.selectedIndex];
         var pricingType = option.getAttribute('data-pricing');
@@ -737,7 +887,7 @@ document.getElementById('bookNowBtn').addEventListener('click', function(e) {
             var start = new Date(date + 'T' + startTime);
             var end = new Date(date + 'T' + endTime);
             if (end <= start) {
-                alert("End time must be after start time");
+                showCustomAlert("End time must be after start time");
                 return;
             }
             var hours = (end - start) / (1000 * 60 * 60);
@@ -745,11 +895,12 @@ document.getElementById('bookNowBtn').addEventListener('click', function(e) {
         } else {
             bookingTime = document.getElementById('bookingTime').value;
             startTime = bookingTime; // for validation
+            endTime = document.getElementById('packageEndTime').getAttribute('data-val');
         }
 
         var validation = validateAvailability(date, startTime, endTime);
         if (!validation.valid) {
-            alert(validation.message);
+            showCustomAlert(validation.message);
             return;
         }
 
@@ -773,7 +924,7 @@ document.getElementById('bookNowBtn').addEventListener('click', function(e) {
                         category_id: categoryId,
                         date: date,
                         time: pricingType === 'hourly' ? startTime : bookingTime,
-                        end_time: pricingType === 'hourly' ? endTime : null,
+                        end_time: endTime,
                         amount: amount
                     })
                 })
@@ -782,12 +933,12 @@ document.getElementById('bookNowBtn').addEventListener('click', function(e) {
                     if (data.success) {
                         window.location.href = data.redirect_url;
                     } else {
-                        alert('Booking failed: ' + (data.message || 'Unknown error'));
+                        showCustomAlert('Booking failed: ' + (data.message || 'Unknown error'));
                     }
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('An error occurred while confirming booking.');
+                    showCustomAlert('An error occurred while confirming booking.');
                 });
             },
             'prefill': {
@@ -802,8 +953,10 @@ document.getElementById('bookNowBtn').addEventListener('click', function(e) {
         var rzp1 = new Razorpay(options);
         rzp1.open();
     @else
-        alert('Please login to book a partner.');
-        window.location.href = '/login';
+        showCustomAlert('Please login to book a partner.');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
     @endauth
 });
 </script>
