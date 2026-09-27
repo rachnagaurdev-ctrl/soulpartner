@@ -24,6 +24,12 @@
             <a href="about-us.html">About Us</a>
             <a href="contact-us.html">Contact</a>
         @endif
+        @guest
+          <div class="nav-auth-mobile">
+            <button class="btn btn-outline" id="loginBtnMobile">Login</button>
+            <button class="btn btn-primary" id="registerBtnMobile">Register</button>
+          </div>
+        @endguest
       </nav>
       <div class="actions">
         <!-- <button class="search-icon" aria-label="Search">⌕</button> -->
@@ -94,8 +100,8 @@
             }
           </style>
         @else
-          <button class="btn btn-outline" id="loginBtn">Login</button>
-          <button class="btn btn-primary" id="registerBtn">Register</button>
+          <button class="btn btn-outline nav-auth-desktop" id="loginBtn">Login</button>
+          <button class="btn btn-primary nav-auth-desktop" id="registerBtn">Register</button>
         @endauth
         <button class="menu" id="menu" aria-label="Open navigation">☰</button>
       </div>

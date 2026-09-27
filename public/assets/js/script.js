@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Attach trigger handlers to buttons
-  const loginTriggers = document.querySelectorAll('#loginBtn');
+  const loginTriggers = document.querySelectorAll('#loginBtn, #loginBtnMobile');
   loginTriggers.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const registerTriggers = document.querySelectorAll('#registerBtn, #startEarningBtn');
+  const registerTriggers = document.querySelectorAll('#registerBtn, #registerBtnMobile, #startEarningBtn');
   registerTriggers.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();

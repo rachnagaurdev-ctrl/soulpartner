@@ -528,15 +528,15 @@
           Messages
           <span class="nav-badge" id="msgUnreadBadge" style="display:none;"></span>
         </a>
-        <a href="#" class="nav-item">
+        <a href="{{ route('dashboard.reviews') }}" class="nav-item {{ request()->routeIs('dashboard.reviews') ? 'active' : '' }}">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
           Reviews
         </a>
-        <a href="#" class="nav-item">
+        <a href="{{ route('dashboard.membership') }}" class="nav-item {{ request()->routeIs('dashboard.membership') ? 'active' : '' }}">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
           Membership
         </a>
-        <a href="#" class="nav-item">
+        <a href="{{ route('dashboard.settings') }}" class="nav-item {{ request()->routeIs('dashboard.settings') ? 'active' : '' }}">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           Settings
         </a>
@@ -560,7 +560,7 @@
 
   {{-- Global unread message counter & notification (polls every 10s) --}}
   <style>
-    .msg-toast {
+    .global-toast {
         position: fixed; bottom: 30px; right: 30px; background: #fff;
         border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         padding: 16px 20px; display: flex; align-items: center; gap: 12px;
@@ -569,34 +569,140 @@
         z-index: 9999; pointer-events: none;
         border: 1px solid #F1F5F9; border-left: 4px solid #E91E63;
     }
-    .msg-toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .msg-toast-icon {
+    .global-toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .global-toast.error { border-left-color: #EF4444; }
+    .global-toast.success { border-left-color: #10B981; }
+    .global-toast-icon {
         width: 40px; height: 40px; border-radius: 50%;
         background: #FDF2F8; color: #E91E63;
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .msg-toast-content { flex: 1; min-width: 150px; }
-    .msg-toast-title { font-weight: 700; color: #1E293B; font-size: 14px; margin-bottom: 2px; }
-    .msg-toast-desc { font-size: 13px; color: #64748B; }
-    .msg-toast-action {
+    .global-toast.error .global-toast-icon { background: #FEF2F2; color: #EF4444; }
+    .global-toast.success .global-toast-icon { background: #ECFDF5; color: #10B981; }
+    .global-toast-content { flex: 1; min-width: 150px; }
+    .global-toast-title { font-weight: 700; color: #1E293B; font-size: 14px; margin-bottom: 2px; }
+    .global-toast-desc { font-size: 13px; color: #64748B; }
+    .global-toast-action {
         background: #E91E63; color: #fff; font-size: 12px; font-weight: 600;
         padding: 6px 12px; border-radius: 6px; text-decoration: none; transition: .2s;
     }
-    .msg-toast-action:hover { background: #d81b60; color: #fff; }
+    .global-toast-action:hover { background: #d81b60; color: #fff; }
   </style>
 
-  <div class="msg-toast" id="msgToast">
-      <div class="msg-toast-icon">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+  <div class="global-toast" id="globalToast">
+      <div class="global-toast-icon" id="globalToastIcon"></div>
+      <div class="global-toast-content">
+          <div class="global-toast-title" id="globalToastTitle">Notification</div>
+          <div class="global-toast-desc" id="globalToastDesc">Message goes here.</div>
       </div>
-      <div class="msg-toast-content">
-          <div class="msg-toast-title">New Message</div>
-          <div class="msg-toast-desc">You received a new message.</div>
-      </div>
-      <a href="{{ route('dashboard.messages') }}" class="msg-toast-action">View</a>
+      <a href="#" class="global-toast-action" id="globalToastAction" style="display:none;">View</a>
   </div>
 
+  {{-- Video Call Modal --}}
+  <div id="videoCallModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); z-index:999999; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+      <div style="background:#0F172A; width:90%; max-width:900px; height:80vh; border-radius:24px; overflow:hidden; position:relative; box-shadow:0 25px 50px rgba(0,0,0,0.5); display:flex; flex-direction:column;">
+          
+          {{-- Header --}}
+          <div style="padding:16px 24px; background:rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; z-index:10;">
+              <div style="color:#fff; font-weight:600; font-size:16px; display:flex; align-items:center; gap:8px;">
+                  <span id="vcStatusDot" style="width:10px; height:10px; background:#F59E0B; border-radius:50%; display:inline-block;"></span>
+                  <span id="vcStatusText">Connecting...</span>
+              </div>
+          </div>
+
+          {{-- Video Area --}}
+          <div style="flex:1; position:relative; background:#000;">
+              <video id="remoteVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+              <video id="localVideo" autoplay playsinline muted style="position:absolute; bottom:24px; right:24px; width:160px; height:240px; object-fit:cover; border-radius:12px; border:2px solid rgba(255,255,255,0.2); box-shadow:0 10px 20px rgba(0,0,0,0.3); transform:scaleX(-1);"></video>
+          </div>
+
+          {{-- Controls --}}
+          <div style="padding:24px; background:linear-gradient(to top, rgba(15,23,42,1), transparent); position:absolute; bottom:0; left:0; right:0; display:flex; justify-content:center; gap:20px;">
+              <button id="vcEndBtn" style="width:64px; height:64px; border-radius:50%; background:#EF4444; color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 25px rgba(239,68,68,0.4); transition:transform 0.2s;">
+                  <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-1.2.6-2.28 1.41-3.19 2.37-.2.22-.52.28-.79.16l-2.02-.9c-.27-.12-.44-.39-.44-.7V5.41C.44 4.8 1 4.29 1.6 4.38 4.95 4.9 8.35 5.23 12 5.23s7.05-.33 10.4-.85c.6-.09 1.16.42 1.16 1.03v9.23c0 .31-.17.58-.44.7l-2.02.9c-.27.12-.59.06-.79-.16-.91-.96-1.99-1.77-3.19-2.37-.33-.16-.56-.51-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+              </button>
+          </div>
+      </div>
+  </div>
+
+  {{-- Incoming Call Modal --}}
+  <div id="incomingCallModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.8); z-index:9999999; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+      <div style="background:#fff; width:100%; max-width:320px; border-radius:24px; padding:32px 24px; text-align:center; box-shadow:0 25px 50px rgba(0,0,0,0.25); animation: vibrate 0.5s infinite;">
+          <div style="width:80px; height:80px; background:#FCE7F3; color:#E91E63; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+              <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 style="margin:0 0 8px; color:#1E293B; font-size:20px;">Incoming Video Call</h3>
+          <p id="incomingCallerName" style="margin:0 0 16px; color:#64748B; font-size:16px; font-weight:600;"></p>
+          
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:12px; text-align:left; margin-bottom:24px; font-size:13px; color:#475569;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                  <span style="font-weight:600; color:#1E293B;">Booking ID</span>
+                  <span id="inBookingId"></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                  <span style="font-weight:600; color:#1E293B;">Service</span>
+                  <span id="inBookingService"></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                  <span style="font-weight:600; color:#1E293B;">Date</span>
+                  <span id="inBookingDate"></span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                  <span style="font-weight:600; color:#1E293B;">Time</span>
+                  <span id="inBookingTime"></span>
+              </div>
+          </div>
+          <div style="display:flex; justify-content:center; gap:16px;">
+              <button id="icRejectBtn" style="width:56px; height:56px; border-radius:50%; background:#EF4444; color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(239,68,68,0.3); transition:transform 0.2s;"><svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-1.2.6-2.28 1.41-3.19 2.37-.2.22-.52.28-.79.16l-2.02-.9c-.27-.12-.44-.39-.44-.7V5.41C.44 4.8 1 4.29 1.6 4.38 4.95 4.9 8.35 5.23 12 5.23s7.05-.33 10.4-.85c.6-.09 1.16.42 1.16 1.03v9.23c0 .31-.17.58-.44.7l-2.02.9c-.27.12-.59.06-.79-.16-.91-.96-1.99-1.77-3.19-2.37-.33-.16-.56-.51-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
+              <button id="icAcceptBtn" style="width:56px; height:56px; border-radius:50%; background:#10B981; color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(16,185,129,0.3); transition:transform 0.2s;"><svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button>
+          </div>
+      </div>
+  </div>
+
+  <script src="/assets/js/webrtc.js"></script>
+
   <script>
+    let toastTimeout;
+    function showToast(title, desc, type = 'success', actionUrl = null, actionText = 'View') {
+        const toast = document.getElementById('globalToast');
+        if (!toast) return;
+
+        // Reset classes
+        toast.className = 'global-toast ' + type;
+        
+        // Update content
+        document.getElementById('globalToastTitle').textContent = title;
+        document.getElementById('globalToastDesc').textContent = desc;
+        
+        // Icon logic
+        const iconContainer = document.getElementById('globalToastIcon');
+        if (type === 'success') {
+            iconContainer.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        } else if (type === 'error') {
+            iconContainer.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        } else {
+            // default / message
+            iconContainer.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>';
+        }
+
+        // Action logic
+        const actionBtn = document.getElementById('globalToastAction');
+        if (actionUrl) {
+            actionBtn.href = actionUrl;
+            actionBtn.textContent = actionText;
+            actionBtn.style.display = 'inline-block';
+        } else {
+            actionBtn.style.display = 'none';
+        }
+
+        // Show toast
+        clearTimeout(toastTimeout);
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 5000);
+    }
+
+    window.showToast = showToast;
+
     (function initUnreadPolling() {
       var badge = document.getElementById('msgUnreadBadge');
       if (!badge) return;
@@ -611,13 +717,8 @@
               badge.textContent = d.count > 99 ? '99+' : d.count;
               badge.style.display = '';
               
-              // Only notify if count increased, it's not the initial load, and we aren't on the chat page
               if (lastCount !== -1 && d.count > lastCount && !window.location.pathname.includes('/dashboard/messages')) {
-                  var toast = document.getElementById('msgToast');
-                  if (toast) {
-                      toast.classList.add('show');
-                      setTimeout(function() { toast.classList.remove('show'); }, 5000);
-                  }
+                  showToast('New Message', 'You received a new message.', 'message', '{{ route('dashboard.messages') }}');
               }
             } else {
               badge.style.display = 'none';

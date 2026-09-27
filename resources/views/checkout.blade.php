@@ -102,7 +102,20 @@
                   <div class="plan-icon-symbol">{{ $plan['icon'] }}</div>
                   <div class="plan-titles">
                     <h3 class="plan-title-name">{{ $plan['name'] }}</h3>
-                    <div class="plan-validity-pill">{{ $plan['period'] }} • {{ $plan['matches'] }}</div>
+                    <div class="plan-validity-pill">
+@php
+$matchesValue = $plan['matches'];
+$text = '';
+if (is_numeric($matchesValue)) {
+    $text = $matchesValue . ' Matches';
+} elseif (str_contains(strtolower($matchesValue), 'match')) {
+    $text = $matchesValue; // already has 'match' in it
+} else {
+    $text = $matchesValue . ' Matches'; // fallback
+}
+@endphp
+{{ $plan['period'] }} • {{ $text }}
+</div>
                   </div>
                 </div>
 
@@ -329,14 +342,7 @@
               <div class="summary-plan-price" id="summaryPlanPriceDisplay">₹{{ number_format($selectedPlan['price']) }}</div>
             </div>
 
-            <!-- Coupon Box -->
-            <div class="coupon-section">
-              <div class="coupon-input-wrap">
-                <input type="text" id="couponInput" placeholder="Promo code (e.g. WELCOME50)">
-                <button type="button" id="applyCouponBtn">Apply</button>
-              </div>
-              <div class="coupon-msg" id="couponMsg"></div>
-            </div>
+
 
             <!-- Pricing Breakdown -->
             <div class="price-breakdown-list">
@@ -344,10 +350,7 @@
                 <span>Plan Subtotal</span>
                 <span id="subtotalDisplay">₹{{ number_format($selectedPlan['price']) }}</span>
               </div>
-              <div class="breakdown-row discount-row" id="discountRow" style="display: none;">
-                <span>Coupon Discount</span>
-                <span id="discountDisplay">-₹0</span>
-              </div>
+
               <div class="breakdown-row">
                 <span>GST / Taxes</span>
                 <span class="tax-included-tag">Included (18%)</span>

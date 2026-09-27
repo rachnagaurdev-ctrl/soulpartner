@@ -27,7 +27,20 @@
                 <div class="plan-price {{ $key === 'yearly' ? 'plan-price-yearly' : '' }}">₹{{ number_format($plan['price']) }} <span class="plan-period">/ {{ $plan['period'] }}</span></div>
               </div>
             </div>
-            <div class="plan-match-pill plan-match-{{ $key }}">{{ $plan['matches'] }}</div>
+            <div class="plan-match-pill plan-match-{{ $key }}">
+@php
+$matchesValue = $plan['matches'];
+$text = '';
+if (is_numeric($matchesValue)) {
+    $text = $matchesValue . ' Matches';
+} elseif (str_contains(strtolower($matchesValue), 'match')) {
+    $text = $matchesValue; // already has 'match' in it
+} else {
+    $text = $matchesValue . ' Matches'; // fallback
+}
+@endphp
+{{ $text }}
+</div>
             <ul class="plan-features {{ $key === 'yearly' ? 'plan-features-yearly' : '' }}">
               @foreach($plan['features'] as $feat)
               <li>{{ $feat }}</li>

@@ -284,3 +284,32 @@ if (!function_exists('get_purposes')) {
         ];
     }
 }
+
+if (!function_exists('get_home_reviews')) {
+    function get_home_reviews($hardcodedList = []) {
+        $dynamicReviews = \App\Models\Review::with(['reviewer', 'booking.category'])
+            ->where('rating', '>=', 4)
+            ->whereNotNull('comment')
+            ->latest()
+            ->take(6)
+            ->get()
+            ->map(function ($r) {
+                $avatar = $r->reviewer->profile_image 
+                    ? 'storage/' . $r->reviewer->profile_image 
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($r->reviewer->name) . '&background=E91E63&color=fff';
+                $tag = $r->booking && $r->booking->category ? '▣ &nbsp; ' . $r->booking->category->name : '▣ &nbsp; Companion';
+                return [
+                    'name' => $r->reviewer->name,
+                    'avatar' => $avatar,
+                    'stars' => $r->rating,
+                    'review' => '"' . $r->comment . '"',
+                    'tag' => $tag,
+                    'dynamic' => true
+                ];
+            });
+
+        $hardcodedReviews = collect($hardcodedList ?? []);
+
+        return collect($dynamicReviews->toArray())->merge($hardcodedReviews)->take(6);
+    }
+}

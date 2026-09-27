@@ -68,15 +68,22 @@ class MembershipPlanResource extends Resource
                             ->prefix('₹')
                             ->default(0),
 
-                        Forms\Components\TextInput::make('period')
+                        Forms\Components\Select::make('period')
                             ->required()
-                            ->placeholder('e.g. 3 Months, 1 Year')
+                            ->options([
+                                '1 Month' => '1 Month',
+                                '3 Months' => '3 Months',
+                                '6 Months' => '6 Months',
+                                '1 Year' => '1 Year',
+                            ])
                             ->default('3 Months'),
 
                         Forms\Components\TextInput::make('matches')
                             ->required()
-                            ->placeholder('e.g. 25 Matches, Unlimited Matches')
-                            ->default('25 Matches'),
+                            ->numeric()
+                            ->label('Matches Limit')
+                            ->placeholder('e.g. 25 (Use 9999 for unlimited)')
+                            ->default(25),
 
                         Forms\Components\TextInput::make('sort_order')
                             ->numeric()

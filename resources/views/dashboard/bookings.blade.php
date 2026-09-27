@@ -385,7 +385,7 @@
 
     $nextBooking = $bookings
         ->whereIn('status', ['upcoming','confirmed'])
-        ->sortBy(fn($b) => \Carbon\Carbon::parse($b->booking_date . ' ' . $b->booking_time))
+        ->sortBy(fn($b) => \Carbon\Carbon::parse($b->booking_date)->format('Y-m-d') . ' ' . $b->booking_time)
         ->first();
 @endphp
 
@@ -633,14 +633,43 @@
                 {{-- Actions --}}
                 <div class="booking-actions">
                     @if(in_array(strtolower($booking->status), ['upcoming','confirmed']))
-                        <a href="{{ route('dashboard.messages', ['booking' => $booking->id]) }}" class="btn-act btn-act-pink">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                            Chat
-                        </a>
-                        <a href="#" class="btn-act btn-act-grey">
+                        <div style="display:flex; gap:8px;">
+                            <a href="{{ route('dashboard.messages', ['booking' => $booking->id]) }}" class="btn-act btn-act-pink" style="flex:1;">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                                Chat
+                            </a>
+                            <button onclick="startVideoCall({{ $booking->id }})" class="btn-act" style="flex:1; background:#8B5CF6; color:#fff; border:none; cursor:pointer;">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                Video
+                            </button>
+                        </div>
+                        @if(!$booking->started_at)
+                            @if(!$isPartner)
+                                <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px; width:100%;">
+                                    <input type="text" id="start_code_{{ $booking->id }}" placeholder="Enter Partner's OTP" style="padding: 8px; border: 1px solid #E2E8F0; border-radius: 6px; font-size:12px; width: 100%; text-align:center; letter-spacing:1px; outline:none;" maxlength="4">
+                                    <button class="btn-act btn-act-primary" onclick="startBooking({{ $booking->id }})" style="width: 100%; justify-content:center;">Start Booking</button>
+                                </div>
+                            @else
+                                <div style="font-size:12px; color:#1E293B; background:#F8FAFC; padding:8px; border-radius:6px; text-align:center; font-weight:600; margin-top:10px; border:1px dashed #CBD5E1;">
+                                    Share OTP with customer:<br><span style="font-size:18px; letter-spacing:4px; color:#E91E63; display:block; margin-top:4px;">{{ $booking->start_code }}</span>
+                                </div>
+                            @endif
+                        @elseif(!$booking->ended_at)
+                            @if(!$isPartner)
+                                <button class="btn-act" style="background:#EF4444; color:#fff; border:none; margin-top:10px; justify-content:center;" onclick="endBooking({{ $booking->id }})">End Booking</button>
+                            @else
+                                <div style="font-size:12px; color:#059669; background:#D1FAE5; padding:8px; border-radius:6px; text-align:center; font-weight:700; margin-top:10px;">
+                                    ● Booking in Progress
+                                </div>
+                            @endif
+                        @endif
+
+                        @if(!$booking->started_at)
+                        <a href="#" class="btn-act btn-act-grey" style="margin-top:10px;">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Cancel
                         </a>
+                        @endif
                     @elseif(strtolower($booking->status) == 'pending')
                         <a href="#" class="btn-act btn-act-primary">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
@@ -651,10 +680,20 @@
                             Cancel
                         </a>
                     @elseif(strtolower($booking->status) == 'completed')
-                        <a href="#" class="btn-act btn-act-pink">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                            Review
-                        </a>
+                        @php
+                            $hasReviewed = \App\Models\Review::where('booking_id', $booking->id)->where('reviewer_id', auth()->id())->exists();
+                        @endphp
+                        @if(!$hasReviewed)
+                            <button class="btn-act btn-act-pink" onclick="openReviewModal({{ $booking->id }}, '{{ addslashes($otherPerson->name) }}')">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                                Review
+                            </button>
+                        @else
+                            <button class="btn-act btn-act-grey" disabled style="opacity:0.7; cursor:not-allowed;">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                Reviewed
+                            </button>
+                        @endif
                         <a href="#" class="btn-act btn-act-grey">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             Book Again
@@ -795,5 +834,170 @@
     // initial run
     applyFilters();
 })();
+
+function startBooking(id) {
+    const code = document.getElementById('start_code_' + id).value;
+    if (!code) {
+        showToast("Missing OTP", "Please enter the OTP provided by the partner.", "error");
+        return;
+    }
+
+    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch('/book/' + id + '/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+        body: JSON.stringify({ start_code: code })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast("Booking Started", data.message, "success");
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showToast("Failed", data.message || "Failed to start booking.", "error");
+        }
+    })
+    .catch(err => { console.error(err); showToast("Error", "An error occurred.", "error"); });
+}
+
+function endBooking(id) {
+    if (!confirm("Are you sure you want to end this booking?")) return;
+
+    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch('/book/' + id + '/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast("Booking Ended", data.message, "success");
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showToast("Failed", data.message || "Failed to end booking.", "error");
+        }
+    })
+    .catch(err => { console.error(err); showToast("Error", "An error occurred.", "error"); });
+}
+
+function openReviewModal(bookingId, partnerName) {
+    document.getElementById('reviewBookingId').value = bookingId;
+    document.getElementById('reviewModalTitle').textContent = 'Review ' + partnerName;
+    document.getElementById('reviewModal').style.display = 'flex';
+}
+function closeReviewModal() {
+    document.getElementById('reviewModal').style.display = 'none';
+    document.getElementById('star5').checked = true;
+    document.getElementById('reviewComment').value = '';
+}
+
+function submitReview() {
+    const id = document.getElementById('reviewBookingId').value;
+    const rating = document.querySelector('input[name="reviewRating"]:checked').value;
+    const comment = document.getElementById('reviewComment').value;
+    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    const btn = document.getElementById('submitReviewBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    fetch('/book/' + id + '/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+        body: JSON.stringify({ rating, comment })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeReviewModal();
+            showToast("Success", data.message, "success");
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showToast("Failed", data.message || "Failed to submit review.", "error");
+            btn.disabled = false;
+            btn.textContent = 'Submit Review';
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast("Error", "An error occurred.", "error");
+        btn.disabled = false;
+        btn.textContent = 'Submit Review';
+    });
+}
 </script>
+
+<style>
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.star-rating input {
+    display: none;
+}
+.star-rating label {
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    color: #CBD5E1;
+    transition: color 0.2s, transform 0.2s;
+}
+.star-rating label svg {
+    width: 100%;
+    height: 100%;
+}
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #F59E0B;
+}
+.star-rating label:active {
+    transform: scale(0.9);
+}
+</style>
+
+<div id="reviewModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:99999; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(4px);">
+    <div style="background:#fff; width:100%; max-width:420px; border-radius:16px; padding:28px; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform:translateY(0); transition:all 0.3s;">
+        <h3 id="reviewModalTitle" style="margin-top:0; color:#0F172A; font-size:20px; font-weight:700; text-align:center; margin-bottom:20px;">Write a Review</h3>
+        <input type="hidden" id="reviewBookingId">
+        
+        <div style="margin-bottom:24px; text-align:center;">
+            <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:12px;">How was your experience?</label>
+            <div class="star-rating">
+                <input type="radio" id="star5" name="reviewRating" value="5" checked />
+                <label for="star5" title="5 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                <input type="radio" id="star4" name="reviewRating" value="4" />
+                <label for="star4" title="4 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                <input type="radio" id="star3" name="reviewRating" value="3" />
+                <label for="star3" title="3 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                <input type="radio" id="star2" name="reviewRating" value="2" />
+                <label for="star2" title="2 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                <input type="radio" id="star1" name="reviewRating" value="1" />
+                <label for="star1" title="1 star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+            </div>
+        </div>
+
+        <div style="margin-bottom:24px;">
+            <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:8px;">Add a Comment <span style="color:#94A3B8; font-weight:400; font-size:12px;">(Optional)</span></label>
+            <textarea id="reviewComment" rows="4" placeholder="Tell us more about your booking..." style="width:100%; padding:14px; border-radius:12px; border:1px solid #E2E8F0; outline:none; background:#F8FAFC; resize:vertical; font-family:inherit; font-size:14px; transition:border-color 0.2s;"></textarea>
+        </div>
+
+        <div style="display:flex; gap:12px;">
+            <button onclick="closeReviewModal()" style="flex:1; background:#F1F5F9; color:#475569; border:none; padding:12px; border-radius:10px; font-weight:600; cursor:pointer; transition:background 0.2s;">Cancel</button>
+            <button id="submitReviewBtn" onclick="submitReview()" style="flex:1; background:linear-gradient(135deg, #E91E63, #9C27B0); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(233,30,99,0.25); transition:transform 0.2s, box-shadow 0.2s;">Submit Review</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Focus states for textarea
+    const ta = document.getElementById('reviewComment');
+    if (ta) {
+        ta.addEventListener('focus', () => ta.style.borderColor = '#E91E63');
+        ta.addEventListener('blur', () => ta.style.borderColor = '#E2E8F0');
+    }
+</script>
+
 @endsection

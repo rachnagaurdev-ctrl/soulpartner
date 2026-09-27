@@ -20,6 +20,15 @@ class Booking extends Model
         'status',
         'payment_id',
         'razorpay_order_id',
+        'start_code',
+        'started_at',
+        'ended_at',
+    ];
+
+    protected $casts = [
+        'booking_date' => 'date',
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
     ];
 
     public function user()
