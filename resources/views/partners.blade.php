@@ -97,21 +97,89 @@
                 <div class="partners-layout">
 
                     <!-- Left Column: Filters Sidebar -->
-                    <aside class="filters-sidebar" id="filtersSidebar">
+                    <div class="mobile-filter-overlay" id="mobileFilterOverlay"></div>
+                    <aside class="filters-sidebar" id="mobileFilterModal">
                         <form method="GET" action="{{ route('partners') }}">
                         <div class="filters-header">
                             <h3 class="filters-title">Filters</h3>
                             <a href="{{ route('partners') }}" class="clear-filters-btn">Clear All</a>
                         </div>
                         <style>
+                            @media(max-width: 991px) {
+                                .filters-sidebar {
+                                    position: fixed;
+                                    top: 0;
+                                    left: -100%;
+                                    width: 85%;
+                                    max-width: 350px;
+                                    height: 100vh;
+                                    background: #fff;
+                                    z-index: 1000;
+                                    overflow-y: auto;
+                                    transition: left 0.3s ease;
+                                    padding: 20px;
+                                }
+                                .filters-sidebar.active {
+                                    left: 0;
+                                }
+                                .mobile-filter-overlay {
+                                    position: fixed;
+                                    top: 0;
+                                    left: 0;
+                                    width: 100%;
+                                    height: 100%;
+                                    background: rgba(0,0,0,0.5);
+                                    z-index: 999;
+                                    display: none;
+                                }
+                                .mobile-filter-overlay.active {
+                                    display: block;
+                                }
+                                .partners-toolbar {
+                                    flex-direction: column !important;
+                                    align-items: flex-start !important;
+                                    gap: 15px !important;
+                                }
+                                .toolbar-right {
+                                    width: 100% !important;
+                                    display: flex !important;
+                                    justify-content: space-between !important;
+                                    align-items: center !important;
+                                    flex-wrap: nowrap !important;
+                                }
+                                .mobile-filter-btn {
+                                    display: flex !important;
+                                    align-items: center;
+                                    justify-content: center;
+                                    flex: 1;
+                                    margin-right: 10px;
+                                    padding: 10px;
+                                    background: #fff;
+                                    border: 1px solid #d1d5db;
+                                    border-radius: 8px;
+                                    font-weight: 600;
+                                    color: #d80b76;
+                                }
+                                .sort-wrapper {
+                                    flex: 1;
+                                    display: flex;
+                                    flex-direction: column;
+                                }
+                                .sort-wrapper label {
+                                    font-size: 11px;
+                                    margin-bottom: 2px;
+                                    color: #6b7280;
+                                }
+                            }
                             @media(min-width: 992px) {
                                 .sidebar-header-mobile { display: none !important; }
+                                .mobile-filter-btn { display: none !important; }
                             }
                         </style>
                         <div class="sidebar-header-mobile" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3 style="margin: 0;">Filters</h3>
                             <button type="button" class="close-filter-btn" id="closeMobileFilterBtn"
-                                aria-label="Close filters" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #1e293b;">&times;</button>
+                                aria-label="Close filters" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #1e293b;" onclick="window.closeMobileFilterModal(event)">&times;</button>
                         </div>
 
                         <!-- Category Filter -->
@@ -253,7 +321,7 @@
                             <div class="toolbar-right">
                                 <!-- Mobile Filter Trigger Button (visible <= 992px) -->
                                 <button type="button" class="mobile-filter-btn" id="openMobileFilterBtn"
-                                    aria-label="Open Filters">
+                                    aria-label="Open Filters" onclick="window.openMobileFilterModal(event)">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -348,7 +416,6 @@
     </div>
 </article>
 @endforeach
-
                         </div>
                         <!-- Pagination Section -->
                         <div class="partners-pagination">
@@ -359,4 +426,31 @@
                 </div>
             </div>
         </section>
+
+        <script>
+            // Define functions globally so onclick can call them
+            window.openMobileFilterModal = function(e) {
+                if (e) e.preventDefault();
+                var modal = document.getElementById('mobileFilterModal');
+                var overlay = document.getElementById('mobileFilterOverlay');
+                if (modal) modal.classList.add('active');
+                if (overlay) overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            };
+            
+            window.closeMobileFilterModal = function(e) {
+                if (e) e.preventDefault();
+                var modal = document.getElementById('mobileFilterModal');
+                var overlay = document.getElementById('mobileFilterOverlay');
+                if (modal) modal.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+
+            // Attach to overlay as well
+            document.addEventListener('DOMContentLoaded', function() {
+                var overlay = document.getElementById('mobileFilterOverlay');
+                if (overlay) overlay.addEventListener('click', window.closeMobileFilterModal);
+            });
+        </script>
 @endsection

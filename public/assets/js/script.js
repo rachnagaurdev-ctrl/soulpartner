@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const openMobileFilterBtn = document.getElementById('openMobileFilterBtn');
   const closeMobileFilterBtn = document.getElementById('closeMobileFilterBtn');
   const mobileFilterOverlay = document.getElementById('mobileFilterOverlay');
-  const mobileFilterModal = document.getElementById('mobileFilterModal');
+  const mobileFilterModal = document.getElementById('mobileFilterModal') || document.getElementById('filtersSidebar');
   const mobileApplyFilterBtn = document.getElementById('mobileApplyFilterBtn');
   const mobileResetFilterBtn = document.getElementById('mobileResetFilterBtn');
 

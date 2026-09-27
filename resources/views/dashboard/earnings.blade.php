@@ -1,7 +1,76 @@
 @extends('layouts.dashboard')
 @section('title', 'Earnings | Soulmate India')
+
+@section('styles')
+<style>
+  /* Earnings page - mobile fixes */
+  .earnings-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .earnings-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 15px;
+  }
+  .earnings-submit-btn {
+    width: auto;
+  }
+
+  @media (max-width: 768px) {
+    /* Remove the hard-coded 30px padding from earnings page on mobile */
+    .earnings-middle-col {
+      padding: 0 !important;
+    }
+
+    /* Stack balance/referral cards vertically */
+    .earnings-stats-grid {
+      grid-template-columns: 1fr !important;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* Stack withdrawal form fields vertically */
+    .earnings-form-grid {
+      grid-template-columns: 1fr !important;
+      gap: 12px;
+    }
+
+    /* Full-width submit button */
+    .earnings-submit-btn {
+      width: 100% !important;
+      justify-content: center;
+      margin-top: 8px !important;
+    }
+
+    /* Referral code box fixes */
+    .referral-box {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 10px;
+    }
+    .referral-box > span {
+      font-size: 18px !important;
+    }
+    .referral-copy-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Balance amount smaller on mobile */
+    .balance-amount {
+      font-size: 28px !important;
+    }
+  }
+</style>
+@endsection
+
 @section('content')
-            <div class="middle-col" style="padding: 30px; width: 100%;">
+      <div class="middle-col earnings-middle-col" style="padding: 30px; width: 100%;">
+
         <div class="page-header">
           <div class="page-title">
             <h1>
@@ -32,16 +101,16 @@
             </div>
         @endif
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        <div class="earnings-stats-grid">
           <div class="card">
             <h5 style="color:#64748B; font-size:14px; text-transform:uppercase; font-weight:600; margin-bottom:10px;">Available Balance</h5>
-            <h2 style="color:#E91E63; font-size:36px; font-weight:700; margin-bottom:0; margin-top:0;">₹{{ number_format($user->wallet_balance, 2) }}</h2>
+            <h2 class="balance-amount" style="color:#E91E63; font-size:36px; font-weight:700; margin-bottom:0; margin-top:0;">₹{{ number_format($user->wallet_balance, 2) }}</h2>
           </div>
           <div class="card">
             <h5 style="color:#64748B; font-size:14px; text-transform:uppercase; font-weight:600; margin-bottom:10px;">Your Referral Code</h5>
-            <div style="background:#F1F5F9; padding:12px; border-radius:8px; display:flex; align-items:center; justify-content:space-between;">
+            <div class="referral-box" style="background:#F1F5F9; padding:12px; border-radius:8px; display:flex; align-items:center; justify-content:space-between;">
               <span style="font-size:20px; font-weight:700; color:#1E293B; letter-spacing:1px;">{{ $user->referral_code }}</span>
-              <button onclick="navigator.clipboard.writeText('{{ $user->referral_code }}'); alert('Copied!');" style="border:none; background:#E91E63; color:#fff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">Copy</button>
+              <button onclick="navigator.clipboard.writeText('{{ $user->referral_code }}').then(()=>{ this.textContent='Copied!'; setTimeout(()=>{ this.textContent='Copy'; },2000); });" class="referral-copy-btn" style="border:none; background:#E91E63; color:#fff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">Copy</button>
             </div>
             <p style="font-size:12px; color:#64748B; margin-top:10px; margin-bottom:0;">Earn ₹100 for every successful registration with your code!</p>
           </div>
@@ -51,7 +120,7 @@
           <h4 style="font-size:18px; font-weight:600; color:#1E293B; margin-bottom:20px; margin-top:0;">Request Withdrawal</h4>
           <form action="{{ route('dashboard.withdraw') }}" method="POST">
             @csrf
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+            <div class="earnings-form-grid">
               <div class="form-group" style="margin-bottom:0;">
                 <label style="font-size:14px; font-weight:500; color:#334155; margin-bottom:8px;">Amount (Min. ₹500)</label>
                 <input type="number" name="amount" min="500" style="width: 100%; border-radius:8px; border:1px solid #E2E8F0; padding:12px;" required>
@@ -62,7 +131,7 @@
               </div>
             </div>
             <div>
-              <button type="submit" class="btn-save" style="margin-top: 10px;">Submit Request</button>
+              <button type="submit" class="btn-save earnings-submit-btn" style="margin-top: 10px;">Submit Request</button>
             </div>
           </form>
         </div>

@@ -4,7 +4,7 @@
         @if(\App\Models\Setting::get('logo'))
           <img src="{{ get_storage_url(\App\Models\Setting::get('logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
         @else
-          <img src="{{asset('assets/images/logo.jpeg')}}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
+          <img src="{{asset('assets/images/logo.png')}}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
         @endif
       </a>
       <nav class="navlinks" id="navlinks">
@@ -36,7 +36,9 @@
         @auth
           <div class="user-dropdown-wrap" style="position: relative; display: inline-block;">
             <button class="btn btn-outline user-dropdown-btn" style="display: flex; align-items: center; gap: 8px;">
-              {{ Auth::user()->name }} <i class="fa-solid fa-chevron-down" style="font-size: 0.8em;"></i>
+              <i class="fa-solid fa-user mobile-icon-only"></i>
+              <span class="desktop-name-only">{{ Auth::user()->name }}</span>
+              <i class="fa-solid fa-chevron-down desktop-name-only" style="font-size: 0.8em;"></i>
             </button>
             <div class="user-dropdown-menu">
               <a href="{{ route('dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
@@ -97,6 +99,13 @@
             }
             .user-dropdown-menu a:hover i, .user-dropdown-menu .logout-btn:hover i {
               color: var(--pink);
+            }
+            @media (max-width: 920px) {
+              .desktop-name-only { display: none !important; }
+              .user-dropdown-btn { padding: 8px 12px; }
+            }
+            @media (min-width: 921px) {
+              .mobile-icon-only { display: none !important; }
             }
           </style>
         @else

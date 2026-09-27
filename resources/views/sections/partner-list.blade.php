@@ -69,7 +69,81 @@
                 <div class="partners-layout">
 
                     <!-- Left Column: Filters Sidebar -->
-                    <aside class="filters-sidebar" id="filtersSidebar">
+                        <style>
+                            @media(max-width: 991px) {
+                                .filters-sidebar {
+                                    display: block !important;
+                                    position: fixed;
+                                    top: 0;
+                                    left: -100%;
+                                    width: 85%;
+                                    max-width: 350px;
+                                    height: 100vh;
+                                    background: #fff;
+                                    z-index: 1000;
+                                    overflow-y: auto;
+                                    transition: left 0.3s ease;
+                                    padding: 20px;
+                                }
+                                .filters-sidebar.active {
+                                    left: 0;
+                                }
+                                .mobile-filter-overlay {
+                                    position: fixed;
+                                    top: 0;
+                                    left: 0;
+                                    width: 100%;
+                                    height: 100%;
+                                    background: rgba(0,0,0,0.5);
+                                    z-index: 999;
+                                    display: none;
+                                }
+                                .mobile-filter-overlay.active {
+                                    display: block;
+                                }
+                                .partners-toolbar {
+                                    flex-direction: column !important;
+                                    align-items: flex-start !important;
+                                    gap: 15px !important;
+                                }
+                                .toolbar-right {
+                                    width: 100% !important;
+                                    display: flex !important;
+                                    justify-content: space-between !important;
+                                    align-items: center !important;
+                                    flex-wrap: nowrap !important;
+                                }
+                                .mobile-filter-btn {
+                                    display: flex !important;
+                                    align-items: center;
+                                    justify-content: center;
+                                    flex: 1;
+                                    margin-right: 10px;
+                                    padding: 10px;
+                                    background: #fff;
+                                    border: 1px solid #d1d5db;
+                                    border-radius: 8px;
+                                    font-weight: 600;
+                                    color: #d80b76;
+                                }
+                                .sort-wrapper {
+                                    flex: 1;
+                                    display: flex;
+                                    flex-direction: column;
+                                }
+                                .sort-wrapper label {
+                                    font-size: 11px;
+                                    margin-bottom: 2px;
+                                    color: #6b7280;
+                                }
+                            }
+                            @media(min-width: 992px) {
+                                .sidebar-header-mobile { display: none !important; }
+                                .mobile-filter-btn { display: none !important; }
+                            }
+                        </style>
+                    <div class="mobile-filter-overlay" id="mobileFilterOverlay"></div>
+                    <aside class="filters-sidebar" id="mobileFilterModal">
                         <form method="GET" action="" id="filterForm">
                         <input type="hidden" name="age_range" id="ageRangeInput" value="{{ request('age_range') }}">
                         <input type="hidden" name="sort" id="sortInput" value="{{ request('sort', 'recommended') }}">
@@ -77,10 +151,10 @@
                             <h3 class="filters-title">Filters</h3>
                             <a href="" class="clear-filters-btn">Clear All</a>
                         </div>
-                        <div class="sidebar-header-mobile">
-                            <h3>Filters</h3>
+                        <div class="sidebar-header-mobile" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="margin: 0;">Filters</h3>
                             <button type="button" class="close-filter-btn" id="closeMobileFilterBtn"
-                                aria-label="Close filters">×</button>
+                                aria-label="Close filters" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #1e293b;" onclick="window.closeMobileFilterModal(event)">×</button>
                         </div>
 
                         <!-- Category Filter -->
@@ -216,7 +290,7 @@
                             <div class="toolbar-right">
                                 <!-- Mobile Filter Trigger Button (visible <= 992px) -->
                                 <button type="button" class="mobile-filter-btn" id="openMobileFilterBtn"
-                                    aria-label="Open Filters">
+                                    aria-label="Open Filters" onclick="window.openMobileFilterModal(event)">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -250,7 +324,7 @@
 
                         <!-- 12 Partners Cards Grid -->
                         <div class="partners-grid" id="partnersGrid">
-                            @foreach($partners as $partner)
+                            @forelse($partners as $partner)
                             <article class="partner-card">
                                 <div class="partner-card-media">
                                     <img src="{{ $partner->profile_image ? get_media_url($partner->profile_image) : 'https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Photo' }}" alt="{{ $partner->name }}" loading="lazy">
@@ -309,7 +383,17 @@
                                     </div>
                                 </div>
                             </article>
-                            @endforeach
+                            @empty
+                            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff; border: 1px dashed #cbd5e1; border-radius: 16px; margin: 20px 0;">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 15px;">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <h3 style="margin-bottom: 8px; color: #334155; font-size: 20px;">No Partners Found</h3>
+                                <p style="color: #64748B; font-size: 14px; margin-bottom: 20px;">We couldn't find any partners matching your current filters.</p>
+                                <a href="?" class="btn btn-primary" style="display: inline-block;">Clear Filters</a>
+                            </div>
+                            @endforelse
 
                         </div>
                         <!-- Pagination Section -->
@@ -337,6 +421,31 @@
                             form.submit();
                         });
                     });
+                });
+
+                // Define functions globally so onclick can call them
+                window.openMobileFilterModal = function(e) {
+                    if (e) e.preventDefault();
+                    var modal = document.getElementById('mobileFilterModal');
+                    var overlay = document.getElementById('mobileFilterOverlay');
+                    if (modal) modal.classList.add('active');
+                    if (overlay) overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                };
+                
+                window.closeMobileFilterModal = function(e) {
+                    if (e) e.preventDefault();
+                    var modal = document.getElementById('mobileFilterModal');
+                    var overlay = document.getElementById('mobileFilterOverlay');
+                    if (modal) modal.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                };
+
+                // Attach to overlay as well
+                document.addEventListener('DOMContentLoaded', function() {
+                    var overlay = document.getElementById('mobileFilterOverlay');
+                    if (overlay) overlay.addEventListener('click', window.closeMobileFilterModal);
                 });
             </script>
         </section>

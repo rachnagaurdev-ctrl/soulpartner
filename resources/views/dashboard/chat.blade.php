@@ -347,9 +347,33 @@
 
 /* ── Responsive ── */
 @media (max-width: 700px) {
+    .main-content { height: calc(100vh - 60px) !important; }
+    .chat-shell { height: calc(100vh - 60px); }
+
+    /* By default: show conv list, hide chat window */
     .conv-panel { width: 100%; }
     .chat-window { display: none; }
-    .chat-window.mobile-active { display: flex; width: 100%; }
+
+    /* When chat is active on mobile */
+    .chat-shell.mobile-chat-active .conv-panel { display: none; }
+    .chat-shell.mobile-chat-active .chat-window { display: flex; width: 100%; }
+
+    /* Back button in chat header (mobile only) */
+    .chat-back-btn { display: flex !important; }
+
+    /* Tighter chat header on mobile */
+    .chat-header { padding: 12px 14px; gap: 10px; }
+    .chat-header-avatar img { width: 36px; height: 36px; }
+    .chat-header-name { font-size: 14px; }
+    .chat-header-sub { font-size: 11px; }
+    .chat-header-actions { gap: 6px; }
+    .icon-action { width: 32px; height: 32px; }
+
+    /* Tighter messages on mobile */
+    .chat-messages { padding: 14px 12px; }
+    .chat-input-bar { padding: 10px 12px; }
+    .msg-content { max-width: 80%; }
+    .msg-bubble { font-size: 13px; padding: 9px 12px; }
 }
 </style>
 @endsection
@@ -428,6 +452,16 @@
 
         {{-- Chat header --}}
         <div class="chat-header">
+            {{-- Back button (mobile only) --}}
+            <button class="chat-back-btn" id="chatBackBtn"
+                style="display:none; background:none; border:none; cursor:pointer; color:#64748B;
+                       padding:4px 8px 4px 0; flex-shrink:0; align-items:center; gap:4px;
+                       font-size:13px; font-weight:600;"
+                aria-label="Back to conversations">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
             <div class="chat-header-avatar">
                 <img src="{{ $partnerAvatar }}" alt="{{ $partner->name }}">
             </div>
@@ -711,5 +745,51 @@ document.getElementById('convSearch').addEventListener('input', function() {
         item.style.display = name.includes(q) ? '' : 'none';
     });
 });
+</script>
+{{-- Mobile chat panel toggle --}}
+<script>
+(function() {
+    var shell    = document.querySelector('.chat-shell');
+    var backBtn  = document.getElementById('chatBackBtn');
+    var convItems = document.querySelectorAll('.conv-item');
+
+    if (!shell) return;
+
+    var isMobile = function() { return window.innerWidth <= 700; };
+
+    // If page loaded with an active booking (URL has ?booking=...) → show chat panel
+    @if($activeBooking)
+    if (isMobile()) {
+        shell.classList.add('mobile-chat-active');
+    }
+    @endif
+
+    // Back button → return to conversation list
+    if (backBtn) {
+        backBtn.addEventListener('click', function() {
+            shell.classList.remove('mobile-chat-active');
+            // Navigate to messages without booking param
+            window.history.pushState({}, '', '{{ route("dashboard.messages") }}');
+        });
+    }
+
+    // Clicking a conversation on mobile → add active class immediately (before page reloads)
+    convItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            if (isMobile()) {
+                shell.classList.add('mobile-chat-active');
+            }
+        });
+    });
+
+    // Re-check on resize
+    window.addEventListener('resize', function() {
+        if (!isMobile()) {
+            shell.classList.remove('mobile-chat-active');
+        } else if (@json($activeBooking ? true : false)) {
+            shell.classList.add('mobile-chat-active');
+        }
+    });
+})();
 </script>
 @endsection

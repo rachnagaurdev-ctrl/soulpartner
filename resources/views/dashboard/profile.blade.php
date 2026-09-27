@@ -1,5 +1,209 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 @section('title', 'Edit Partner Profile | Soulmate India')
+
+@section('styles')
+<style>
+  /* ============================================
+     PROFILE PAGE – MOBILE RESPONSIVE OVERRIDES
+  ============================================ */
+
+  /* Force the layout container to wrap properly on mobile */
+  @media (max-width: 768px) {
+
+    /* Override main-content to be a proper column stack */
+    .main-content {
+      flex-direction: column !important;
+      flex-wrap: nowrap !important;
+      padding: 12px !important;
+      gap: 12px !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      height: auto !important;
+      min-height: 0 !important;
+    }
+
+    /* Both columns become full width */
+    .middle-col {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      flex: none !important;
+      order: 2;
+    }
+    .right-col {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex-shrink: 1 !important;
+      order: 1;
+    }
+
+    /* Verification banner – stack vertically */
+    #emailVerifyBanner {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      padding: 12px 14px !important;
+      gap: 12px !important;
+    }
+    #emailVerifyBanner > div { width: 100%; }
+    #emailVerifyBanner button {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+
+    /* Preview card – compact image */
+    .preview-card .preview-img {
+      height: 180px !important;
+    }
+    .preview-content {
+      padding: 12px !important;
+    }
+    .preview-name {
+      font-size: 16px !important;
+    }
+    .preview-details {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Cards */
+    .card {
+      padding: 14px !important;
+      margin-bottom: 12px !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      overflow-x: hidden !important;
+    }
+    .card-header {
+      font-size: 14px !important;
+      margin-bottom: 12px !important;
+    }
+
+    /* Form fields */
+    .form-grid {
+      grid-template-columns: 1fr !important;
+      gap: 0 !important;
+    }
+    .form-group {
+      margin-bottom: 12px !important;
+    }
+    .form-control {
+      font-size: 14px !important;
+    }
+
+    /* Page header */
+    .page-header {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 8px !important;
+      margin-bottom: 12px !important;
+    }
+    .page-title h1 {
+      font-size: 17px !important;
+    }
+    .page-title p {
+      font-size: 12px !important;
+    }
+
+    /* Photo grid – smaller items, horizontal scroll */
+    .photo-grid {
+      gap: 8px !important;
+    }
+    .photo-item {
+      width: 76px !important;
+      height: 92px !important;
+    }
+    .photo-upload-btn {
+      width: 76px !important;
+      height: 92px !important;
+    }
+
+    /* Pill tags */
+    .pill-label {
+      font-size: 12px !important;
+      padding: 5px 11px !important;
+    }
+
+    /* ── Force all form fields to full width on mobile ── */
+    .form-grid {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 0 !important;
+      width: 100% !important;
+    }
+    .form-group {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    .form-control,
+    input.form-control,
+    select.form-control,
+    textarea.form-control {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Sticky save button bar at bottom */
+    .form-actions {
+      position: sticky !important;
+      bottom: 0 !important;
+      background: #F8FAFC !important;
+      padding: 10px 0 6px !important;
+      margin-top: 8px !important;
+      z-index: 20 !important;
+      border-top: 1px solid #E2E8F0 !important;
+      flex-direction: column-reverse !important;
+    }
+    .btn-save, .btn-cancel {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+
+    /* Basic Info + About Me: SINGLE COLUMN on mobile
+       Note: inline style override requires !important on display */
+    .profile-info-grid {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+    /* About Me card (2nd child) appears BELOW Basic Info */
+    .profile-info-grid > div:last-child {
+      order: 2;
+    }
+    .profile-info-grid > div:first-child {
+      order: 1;
+    }
+    /* Both cards fill full width */
+    .profile-info-grid > div {
+      width: 100% !important;
+    }
+
+    /* Availability rows — better spacing on mobile */
+    .avail-row {
+      gap: 8px !important;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+    }
+    .avail-row label span {
+      width: 50px !important;
+      font-size: 12px !important;
+      padding: 7px 0 !important;
+    }
+    .avail-row .form-control {
+      width: 90px !important;
+      font-size: 12px !important;
+      padding: 7px 6px !important;
+    }
+    .avail-row > span {
+      font-size: 12px !important;
+      flex-shrink: 0;
+    }
+  }
+</style>
+@endsection
+
+
 @section('content')
       <div class="middle-col">
         @if(session('success'))
@@ -134,7 +338,7 @@
           </div>
 
           <!-- Basic Information & About Me Grid -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="profile-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="card">
               <div class="card-header">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -240,7 +444,7 @@
                       $fromTime = $availabilities[$day]['from'] ?? '09:00';
                       $toTime = $availabilities[$day]['to'] ?? '18:00';
                   @endphp
-                  <div style="display: flex; align-items: center; gap: 15px;">
+                  <div class="avail-row" style="display: flex; align-items: center; gap: 15px;">
                       <label style="margin:0; display:flex; align-items:center; cursor:pointer;">
                           <input type="checkbox" name="availability[{{$day}}][active]" value="1" style="display:none;" onchange="this.nextElementSibling.style.background = this.checked ? '#a855f7' : '#fff'; this.nextElementSibling.style.color = this.checked ? '#fff' : '#64748B';" {{ $dayActive ? 'checked' : '' }}>
                           <span style="display:inline-block; width: 60px; text-align:center; padding: 8px 0; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 500; font-size: 13px; background: {{ $dayActive ? '#a855f7' : '#fff' }}; color: {{ $dayActive ? '#fff' : '#64748B' }};">{{ $day }}</span>

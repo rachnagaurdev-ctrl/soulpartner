@@ -6,7 +6,6 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>@yield('title', 'Dashboard | Soulmate India')</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-  @yield('styles')
   <style>
     body {
       margin: 0;
@@ -96,6 +95,29 @@
       padding-top: 70px;
       height: calc(100vh - 70px);
     }
+
+    /* Sidebar Overlay (mobile only) */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      z-index: 199;
+      backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.active { display: block; }
+
+    /* Hamburger button - hidden on desktop */
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #0F172A;
+      padding: 6px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
     
     /* Sidebar */
     .sidebar {
@@ -106,6 +128,9 @@
       flex-direction: column;
       height: 100%;
       padding-top: 20px;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 200;
     }
     .nav-list {
       list-style: none;
@@ -133,6 +158,7 @@
       margin-right: 15px;
       width: 18px;
       height: 18px;
+      flex-shrink: 0;
     }
     .nav-badge {
       margin-left: auto;
@@ -154,10 +180,12 @@
       overflow-y: auto;
       display: flex;
       gap: 30px;
+      min-width: 0;
     }
     .middle-col {
       flex: 1;
       max-width: 800px;
+      min-width: 0;
     }
     .right-col {
       width: 320px;
@@ -467,14 +495,93 @@
       margin-bottom: 20px;
       border: 1px solid #31C48D;
     }
+
+    /* ===========================
+       MOBILE RESPONSIVE
+    =========================== */
+    @media (max-width: 768px) {
+      body { overflow: auto; height: auto; }
+
+      .topbar { padding: 0 14px; height: 60px; }
+      .topbar-left { width: auto; gap: 10px; }
+      .topbar-left img { max-width: 90px; max-height: 36px; }
+      .topbar-right { gap: 10px; }
+
+      /* Show hamburger on mobile */
+      .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+
+      .layout-container {
+        padding-top: 60px;
+        height: auto;
+        min-height: calc(100vh - 60px);
+        flex-direction: column;
+        overflow: visible;
+      }
+
+      /* Sidebar becomes a slide-in drawer */
+      .sidebar {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        height: auto;
+        width: 260px;
+        transform: translateX(-100%);
+        overflow-y: auto;
+        padding-top: 12px;
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      body { overflow-x: hidden; overflow-y: auto; height: auto; }
+
+      .main-content {
+        flex-direction: column !important;
+        padding: 14px;
+        gap: 14px;
+        overflow-y: visible;
+        overflow-x: hidden;
+        width: 100%;
+        box-sizing: border-box;
+        height: auto !important;
+      }
+      .middle-col { max-width: 100% !important; width: 100% !important; flex: none !important; }
+      .right-col { width: 100% !important; flex-shrink: 1 !important; }
+
+      .form-grid { grid-template-columns: 1fr; gap: 0; }
+
+      .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .page-title h1 { font-size: 18px; }
+
+      .form-actions { flex-direction: column-reverse; }
+      .btn-save, .btn-cancel { width: 100%; justify-content: center; }
+
+      .card { padding: 14px; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar-right .icon-btn:first-child { display: none; }
+    }
   </style>
+  @yield('styles')
 </head>
 <body>
 
   <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-left">
-      <img src="{{ asset('assets/images/logo.jpeg') }}" alt="Soulmate India">
+      <!-- Hamburger for mobile -->
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open navigation">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <a style="cursor: pointer;" href="/">
+         @if(\App\Models\Setting::get('logo'))
+          <img src="{{ get_storage_url(\App\Models\Setting::get('logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
+        @else
+          <img src="{{asset('assets/images/logo.png')}}" alt="{{ \App\Models\Setting::get('site_name', 'Soulmate India') }}">
+        @endif
+      </a>
     </div>
     <!-- <div class="search-bar">
       <svg width="18" height="18" fill="none" stroke="#A0AEC0" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -504,6 +611,8 @@
   </div>
 
   <div class="layout-container">
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <!-- Sidebar -->
     <aside class="sidebar">
       <ul class="nav-list">
@@ -730,6 +839,41 @@
       }
       
       checkUnread();
+    })();
+  </script>
+
+  <!-- Mobile Sidebar Toggle JS -->
+  <script>
+    (function() {
+      var toggle   = document.getElementById('sidebarToggle');
+      var sidebar  = document.querySelector('.sidebar');
+      var overlay  = document.getElementById('sidebarOverlay');
+
+      if (!toggle || !sidebar || !overlay) return;
+
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      toggle.addEventListener('click', function() {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+      });
+
+      overlay.addEventListener('click', closeSidebar);
+
+      // Close when a nav link is clicked on mobile
+      sidebar.querySelectorAll('.nav-item').forEach(function(link) {
+        link.addEventListener('click', function() {
+          if (window.innerWidth <= 768) closeSidebar();
+        });
+      });
     })();
   </script>
 </body>
