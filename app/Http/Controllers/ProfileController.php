@@ -80,10 +80,28 @@ class ProfileController extends Controller
             $validatedData['category'] = implode(',', $selectedCategories);
             
             if (isset($validatedData['category_prices'])) {
+                $categories = \App\Models\Category::whereIn('slug', $selectedCategories)->get()->keyBy('slug');
                 $filteredPrices = [];
+                
                 foreach ($selectedCategories as $catSlug) {
                     if (isset($validatedData['category_prices'][$catSlug]) && $validatedData['category_prices'][$catSlug] !== '') {
-                        $filteredPrices[$catSlug] = (float)$validatedData['category_prices'][$catSlug];
+                        $price = (float)$validatedData['category_prices'][$catSlug];
+                        $cat = $categories[$catSlug] ?? null;
+                        
+                        if ($cat) {
+                            if ($cat->min_price !== null && $price < $cat->min_price) {
+                                throw \Illuminate\Validation\ValidationException::withMessages([
+                                    "category_prices.{$catSlug}" => "The price for {$cat->name} must be at least ₹" . floatval($cat->min_price)
+                                ]);
+                            }
+                            if ($cat->max_price !== null && $price > $cat->max_price) {
+                                throw \Illuminate\Validation\ValidationException::withMessages([
+                                    "category_prices.{$catSlug}" => "The price for {$cat->name} may not be greater than ₹" . floatval($cat->max_price)
+                                ]);
+                            }
+                        }
+                        
+                        $filteredPrices[$catSlug] = $price;
                     }
                 }
                 $validatedData['category_prices'] = $filteredPrices;

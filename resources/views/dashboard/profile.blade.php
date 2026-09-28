@@ -271,6 +271,16 @@
 
           @csrf
           @method('PUT')
+          
+          @if ($errors->any())
+              <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+                  <ul style="margin: 0; padding-left: 20px;">
+                      @foreach ($errors->all() as $error)
+                          <li>{{ $error }}</li>
+                      @endforeach
+                  </ul>
+              </div>
+          @endif
 
           <div class="page-header">
             <div class="page-title">

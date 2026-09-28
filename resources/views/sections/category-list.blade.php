@@ -32,7 +32,15 @@
               
               <div class="catlist-pricing">
                   <div class="catlist-price">
-                      From <strong>₹{{ number_format($cat->prices, 0) }}</strong>
+                      @if($cat->min_price && $cat->max_price)
+                          <strong>₹{{ number_format($cat->min_price, 0) }} - ₹{{ number_format($cat->max_price, 0) }}</strong>
+                      @elseif($cat->min_price)
+                          From <strong>₹{{ number_format($cat->min_price, 0) }}</strong>
+                      @elseif($cat->prices)
+                          From <strong>₹{{ number_format($cat->prices, 0) }}</strong>
+                      @else
+                          <strong>N/A</strong>
+                      @endif
                   </div>
                   <div class="catlist-time">
                       Minimum {{ ($cat->hours* 60 + $cat->minutes)/60 }} Hours

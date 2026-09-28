@@ -42,9 +42,24 @@ class CategoryResource extends Resource
                     ->image()
                     ->directory('categories')
                     ->nullable(),
+                Forms\Components\FileUpload::make('horizontal_image')
+                    ->image()
+                    ->directory('categories')
+                    ->nullable(),
                 Forms\Components\TextInput::make('icon')
                     ->nullable(),
                 Forms\Components\TextInput::make('prices')
+                    ->label('Default Price')
+                    ->numeric()
+                    ->prefix('₹')
+                    ->nullable(),
+                Forms\Components\TextInput::make('min_price')
+                    ->label('Minimum Price')
+                    ->numeric()
+                    ->prefix('₹')
+                    ->nullable(),
+                Forms\Components\TextInput::make('max_price')
+                    ->label('Maximum Price')
                     ->numeric()
                     ->prefix('₹')
                     ->nullable(),

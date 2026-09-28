@@ -14,8 +14,8 @@
           @forelse($categories as $cat)
           <article class="category-card">
             <div class="category-img">
-                @if($cat->image)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url($cat->image) }}" alt="{{ $cat->name }}">
+                @if($cat->horizontal_image)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($cat->horizontal_image) }}" alt="{{ $cat->name }}">
                 @else
                     <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=2426" alt="Default Blog">
                 @endif
@@ -35,7 +35,11 @@
                   <div class="category-meta-item">
                       <i class="fa-solid fa-indian-rupee-sign category-meta-icon"></i>
                       <span class="category-meta-text">
-                          @if($cat->prices)
+                          @if($cat->min_price && $cat->max_price)
+                              {{ number_format($cat->min_price, 0) }} - {{ number_format($cat->max_price, 0) }}
+                          @elseif($cat->min_price)
+                              From {{ number_format($cat->min_price, 0) }}
+                          @elseif($cat->prices)
                               {{ number_format($cat->prices, 0) }}
                           @else
                               N/A
@@ -77,4 +81,4 @@
       </div>
     </section>
 
-
+
