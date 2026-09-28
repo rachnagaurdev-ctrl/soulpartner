@@ -145,7 +145,7 @@
               <span class="custom-check"></span>
               <span>Remember me</span>
             </label>
-            <a href="#" class="forgot-link">Forgot password?</a>
+            <a href="{{ route('password.request') }}" class="forgot-link">Forgot password?</a>
           </div>
 
           <!-- Inline Error Banner for Login -->

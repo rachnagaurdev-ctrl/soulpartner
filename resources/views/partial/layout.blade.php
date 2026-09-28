@@ -22,6 +22,11 @@
   @include('partial.header')
 
   <main id="home">
+    @if(session('success'))
+      <div style="background: #e6ffed; border: 1px solid #b7ebc5; color: #1e7e34; padding: 12px; border-radius: 8px; margin: 20px auto; max-width: 800px; text-align: center; font-size: 15px;">
+          {{ session('success') }}
+      </div>
+    @endif
     @yield('content')
    
   </main>

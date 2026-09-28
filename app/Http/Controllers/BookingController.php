@@ -15,8 +15,8 @@ class BookingController extends Controller
             'date' => 'required',
             'time' => 'required',
             'category_id' => 'required',
-            'razorpay_payment_id' => 'required'
-        ]);
+            'razorpay_payment_id' => 'required''
+l b     ]);
 
         $partner = User::where('profile_id', $profile_id)->firstOrFail();
         $user = Auth::user();

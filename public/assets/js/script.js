@@ -564,3 +564,91 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+/* --- Extracted from resources/views/sections/banner.blade.php --- */
+(function () {
+  const wraps = document.querySelectorAll('.sbd-wrap');
+
+  wraps.forEach(function (wrap) {
+    const selected  = wrap.querySelector('.sbd-selected');
+    const hidden    = wrap.querySelector('.sbd-value');
+    const dropdown  = wrap.querySelector('.sbd-dropdown');
+    const items     = wrap.querySelectorAll('.sbd-item');
+    const searchIn  = wrap.querySelector('.sbd-search');
+    const placeholder = selected.dataset.placeholder || '';
+
+    /* Toggle open */
+    wrap.addEventListener('click', function (e) {
+      if (searchIn && e.target === searchIn) return; // don't close when typing
+      const isOpen = wrap.classList.contains('sbd-open');
+      closeAll();
+      if (!isOpen) {
+        wrap.classList.add('sbd-open');
+        if (searchIn) { searchIn.focus(); searchIn.value = ''; filterItems(searchIn, items); }
+      }
+    });
+
+    /* Pick item */
+    items.forEach(function (item) {
+      item.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const val   = item.dataset.value;
+        const label = item.textContent.trim();
+
+        hidden.value = val;
+
+        if (val === '') {
+          selected.textContent = placeholder;
+          selected.classList.add('is-placeholder');
+        } else {
+          selected.textContent = label;
+          selected.classList.remove('is-placeholder');
+        }
+
+        items.forEach(function (i) { i.classList.remove('sbd-active'); });
+        if (val !== '') item.classList.add('sbd-active');
+
+        closeAll();
+      });
+    });
+
+    /* Search filter */
+    if (searchIn) {
+      searchIn.addEventListener('input', function () {
+        filterItems(searchIn, items);
+      });
+      searchIn.addEventListener('click', function (e) { e.stopPropagation(); });
+    }
+
+    /* Init placeholder state */
+    selected.classList.add('is-placeholder');
+  });
+
+  /* Close all dropdowns */
+  function closeAll() {
+    wraps.forEach(function (w) { w.classList.remove('sbd-open'); });
+  }
+
+  /* Filter list by search query */
+  function filterItems(input, items) {
+    const q = input.value.toLowerCase().trim();
+    items.forEach(function (item) {
+      const txt = item.textContent.toLowerCase();
+      if (q === '' || txt.includes(q)) {
+        item.classList.remove('sbd-hidden');
+      } else {
+        item.classList.add('sbd-hidden');
+      }
+    });
+  }
+
+  /* Close on outside click */
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.sbd-wrap')) closeAll();
+  });
+
+  /* Close on Escape */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeAll();
+  });
+})();

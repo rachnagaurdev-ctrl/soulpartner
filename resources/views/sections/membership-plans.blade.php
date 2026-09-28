@@ -21,7 +21,7 @@
             <div class="plan-refund-badge">50%<br><span>Refund</span></div>
             @endif
             <div class="plan-card-header">
-              <div class="plan-icon plan-icon-{{ $key }}">{{ $plan['icon'] ?? '🛡️' }}</div>
+              <div class="plan-icon plan-icon-{{ $key }}">{!! $plan['icon'] ?? '<i class="fa-solid fa-shield-halved"></i>' !!}</div>
               <div>
                 <div class="plan-name {{ $key === 'yearly' ? 'plan-name-yearly' : '' }}">{{ $plan['name'] }}</div>
                 <div class="plan-price {{ $key === 'yearly' ? 'plan-price-yearly' : '' }}">₹{{ number_format($plan['price']) }} <span class="plan-period">/ {{ $plan['period'] }}</span></div>
