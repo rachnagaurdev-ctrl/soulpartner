@@ -91,7 +91,7 @@
           <span class="ribbon-heart">💗</span>
           <span class="ribbon-brand-text">SOULMATE INDIA</span>
         </div>
-        <span class="ribbon-tag">Partner on Rent</span>
+        <!-- <span class="ribbon-tag">Partner on Rent</span> -->
       </div>
 
       <div class="auth-tabs-wrap">
@@ -153,9 +153,9 @@
 
           <button type="submit" class="btn btn-primary auth-submit-btn">Log In</button>
 
-          <div class="auth-divider"><span>OR</span></div>
+          <!-- <div class="auth-divider"><span>OR</span></div> -->
 
-          <button type="button" class="btn btn-google">
+          <!-- <button type="button" class="btn btn-google">
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
               <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.36 24 12 24z" />
@@ -163,7 +163,7 @@
               <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z" />
             </svg>
             Continue with Google
-          </button>
+          </button> -->
 
           <div class="auth-switch">
             Don't have an account? <button type="button" class="switch-link" id="gotoRegister">Create Account Free</button>
@@ -281,7 +281,12 @@
                 <span class="input-icon">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 </span>
-                <input type="text" id="regCity" placeholder="e.g. Mumbai, Delhi">
+                <select id="regCity">
+                  <option value="">Select City</option>
+                  @foreach(get_cities() as $city)
+                    <option value="{{ $city }}">{{ $city }}</option>
+                  @endforeach
+                </select>
               </div>
             </div>
             <div class="form-group-modern">

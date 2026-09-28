@@ -51,6 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchbox = document.querySelector('.searchbox');
   if (searchbox) {
     searchbox.addEventListener('submit', (e) => {
+      // Allow native submission if the form has an action defined
+      if (searchbox.hasAttribute('action') && searchbox.getAttribute('action') !== '') {
+        return;
+      }
       e.preventDefault();
       const discoverSec = document.getElementById('discover');
       if (discoverSec) {

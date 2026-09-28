@@ -17,7 +17,7 @@
           <div><label>What do you need?</label><select>
               <option value="">e.g. Movie, Shopping, Travel</option>
               @foreach($categories as $cat)
-              <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+              <option value="{{ $cat->slug }}">{{ $cat->name }}</option>
               @endforeach
             </select></div>
         </div>
@@ -25,9 +25,9 @@
           <div class="ico">⌖</div>
           <div><label>Location</label><select>
               <option>Select city</option>
-              <option>Delhi</option>
-              <option>Mumbai</option>
-              <option>Bengaluru</option>
+              @foreach(get_cities() as $city)
+                <option value="{{ $city }}">{{ $city }}</option>
+              @endforeach
             </select></div>
         </div>
         <div class="searchfield">

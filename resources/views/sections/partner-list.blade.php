@@ -144,7 +144,7 @@
                         </style>
                     <div class="mobile-filter-overlay" id="mobileFilterOverlay"></div>
                     <aside class="filters-sidebar" id="mobileFilterModal">
-                        <form method="GET" action="" id="filterForm">
+                        <form method="GET" action="{{ request()->url() }}" id="filterForm">
                         <input type="hidden" name="age_range" id="ageRangeInput" value="{{ request('age_range') }}">
                         <input type="hidden" name="sort" id="sortInput" value="{{ request('sort', 'recommended') }}">
                         <div class="filters-header">
@@ -163,7 +163,7 @@
                             <div class="filter-options">
                                 @forelse($categories as $cat)
                                 <label class="filter-checkbox-item">
-                                    <input type="checkbox" name="category[]" value="{{ $cat->name }}" {{ in_array($cat->name, (array)request('category', [])) ? 'checked' : '' }}>
+                                    <input type="checkbox" name="category[]" value="{{ $cat->slug }}" {{ in_array($cat->slug, (array)request('category', [])) ? 'checked' : '' }} onchange="document.getElementById('filterForm').submit()">
                                     <span class="custom-check"></span>
                                     <span class="option-label">{{ $cat->name }}</span>
                                 </label>
@@ -207,19 +207,15 @@
                             <div class="filter-select-wrapper">
                                 <select name="city" class="filter-select" id="filterLocationSelect" onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Select City</option>
-                                    <option value="Delhi" {{ request('city') == 'Delhi' ? 'selected' : '' }}>Delhi</option>
-                                    <option value="Mumbai" {{ request('city') == 'Mumbai' ? 'selected' : '' }}>Mumbai</option>
-                                    <option value="Bangalore" {{ request('city') == 'Bangalore' ? 'selected' : '' }}>Bangalore</option>
-                                    <option value="Pune" {{ request('city') == 'Pune' ? 'selected' : '' }}>Pune</option>
-                                    <option value="Gurgaon" {{ request('city') == 'Gurgaon' ? 'selected' : '' }}>Gurgaon</option>
-                                    <option value="Jaipur" {{ request('city') == 'Jaipur' ? 'selected' : '' }}>Jaipur</option>
-                                    <option value="Chandigarh" {{ request('city') == 'Chandigarh' ? 'selected' : '' }}>Chandigarh</option>
+                                    @foreach(get_cities() as $city)
+                                        <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
 
                         <!-- Price Range Filter -->
-                        <div class="filter-group">
+                        <!-- <div class="filter-group">
                             <div class="filter-heading-flex">
                                 <h4 class="filter-heading">Price Range (per hour)</h4>
                             </div>
@@ -232,7 +228,7 @@
                                     <span>₹5,000+</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Availability Filter -->
                         <div class="filter-group">
@@ -311,11 +307,11 @@
                                     <label for="sortSelect">Sort by:</label>
                                     <div class="sort-select-box">
                                         <select id="sortSelect" class="sort-select" onchange="document.getElementById('sortInput').value = this.value; document.getElementById('filterForm').submit()">
-                                            <option value="recommended" {{ request('sort') == 'recommended' ? 'selected' : '' }}>Recommended</option>
+                                            <!-- <option value="recommended" {{ request('sort') == 'recommended' ? 'selected' : '' }}>Recommended</option> -->
                                             <option value="rating" {{ request('sort') == 'rating' ? 'selected' : '' }}>Highest Rated</option>
                                             <option value="price-low" {{ request('sort') == 'price-low' ? 'selected' : '' }}>Price: Low to High</option>
                                             <option value="price-high" {{ request('sort') == 'price-high' ? 'selected' : '' }}>Price: High to Low</option>
-                                            <option value="popularity" {{ request('sort') == 'popularity' ? 'selected' : '' }}>Most Popular</option>
+                                            <!-- <option value="popularity" {{ request('sort') == 'popularity' ? 'selected' : '' }}>Most Popular</option> -->
                                         </select>
                                     </div>
                                 </div>
@@ -409,6 +405,14 @@
                     const ageChips = document.querySelectorAll('.age-chip');
                     const ageInput = document.getElementById('ageRangeInput');
                     const form = document.getElementById('filterForm');
+
+                    // Auto-submit form when any filter checkbox is toggled
+                    const filterCheckboxes = document.querySelectorAll('.filter-checkbox-item input[type="checkbox"]');
+                    filterCheckboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            form.submit();
+                        });
+                    });
 
                     ageChips.forEach(chip => {
                         chip.addEventListener('click', function() {

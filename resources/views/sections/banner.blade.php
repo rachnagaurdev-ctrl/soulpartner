@@ -33,7 +33,7 @@
                 <ul class="sbd-list">
                   <li class="sbd-item" data-value="">e.g. Movie, Shopping, Travel</li>
                   @foreach ($bannerCategories as $cat)
-                    <li class="sbd-item" data-value="{{ $cat->name }}">{{ $cat->name }}</li>
+                    <li class="sbd-item" data-value="{{ $cat->slug }}">{{ $cat->name }}</li>
                   @endforeach
                 </ul>
               </div>
@@ -47,7 +47,7 @@
             <div class="sbd-inner">
               <label>Location</label>
               <div class="sbd-selected" data-placeholder="Select city">Select city</div>
-              <input type="hidden" name="location" class="sbd-value">
+              <input type="hidden" name="city" class="sbd-value">
               <div class="sbd-dropdown sbd-has-search">
                 <div class="sbd-search-wrap">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>

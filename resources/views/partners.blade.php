@@ -30,13 +30,10 @@
                         <div class="field-info">
                             <label>Location</label>
                             <select id="heroLocationSelect">
-                                <option value="Delhi, India" selected>Delhi, India</option>
-                                <option value="Mumbai, India">Mumbai, India</option>
-                                <option value="Bangalore, India">Bangalore, India</option>
-                                <option value="Pune, India">Pune, India</option>
-                                <option value="Gurgaon, India">Gurgaon, India</option>
-                                <option value="Jaipur, India">Jaipur, India</option>
-                                <option value="Chandigarh, India">Chandigarh, India</option>
+                                <option value="">Select City</option>
+                                @foreach(get_cities() as $city)
+                                    <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -56,7 +53,7 @@
                             <select id="heroCategorySelect">
                                 <option value="">All Categories</option>
                                 @foreach($categories as $cat)
-                                <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+                                <option value="{{ $cat->slug }}">{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -188,7 +185,7 @@
                             <div class="filter-options">
                                 @forelse($categories as $cat)
                                 <label class="filter-checkbox-item">
-                                    <input type="checkbox" name="category[]" value="{{ $cat->name }}" {{ in_array($cat->name, (array)request('category', [])) ? 'checked' : '' }}>
+                                    <input type="checkbox" name="category[]" value="{{ $cat->slug }}" {{ in_array($cat->slug, (array)request('category', [])) ? 'checked' : '' }}>
                                     <span class="custom-check"></span>
                                     <span class="option-label">{{ $cat->name }}</span>
                                 </label>
@@ -238,13 +235,9 @@
                             <div class="filter-select-wrapper">
                                 <select class="filter-select" id="filterLocationSelect">
                                     <option value="">Select City</option>
-                                    <option value="Delhi">Delhi</option>
-                                    <option value="Mumbai">Mumbai</option>
-                                    <option value="Bangalore">Bangalore</option>
-                                    <option value="Pune">Pune</option>
-                                    <option value="Gurgaon">Gurgaon</option>
-                                    <option value="Jaipur">Jaipur</option>
-                                    <option value="Chandigarh">Chandigarh</option>
+                                    @foreach(get_cities() as $city)
+                                        <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -451,6 +444,40 @@
             document.addEventListener('DOMContentLoaded', function() {
                 var overlay = document.getElementById('mobileFilterOverlay');
                 if (overlay) overlay.addEventListener('click', window.closeMobileFilterModal);
+
+                // Auto-submit form when any filter checkbox is toggled
+                var form = document.getElementById('filterForm');
+                if (form) {
+                    const filterCheckboxes = document.querySelectorAll('.filter-checkbox-item input[type="checkbox"]');
+                    filterCheckboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            form.submit();
+                        });
+                    });
+                }
+
+                // Handle hero search button click
+                var searchPartnersBtn = document.getElementById('searchPartnersBtn');
+                if (searchPartnersBtn) {
+                    searchPartnersBtn.addEventListener('click', function() {
+                        var city = document.getElementById('heroLocationSelect').value;
+                        var cat = document.getElementById('heroCategorySelect').value;
+                        
+                        var url = new URL(window.location.href);
+                        if (city) url.searchParams.set('city', city);
+                        else url.searchParams.delete('city');
+                        
+                        if (cat) {
+                            url.searchParams.delete('category[]');
+                            url.searchParams.set('category', cat);
+                        } else {
+                            url.searchParams.delete('category');
+                            url.searchParams.delete('category[]');
+                        }
+                        
+                        window.location.href = url.toString();
+                    });
+                }
             });
         </script>
 @endsection

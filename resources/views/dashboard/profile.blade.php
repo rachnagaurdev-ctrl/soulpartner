@@ -224,7 +224,7 @@
             box-shadow: 0 4px 16px rgba(245,158,11,0.15);
         ">
             <div style="display:flex; align-items:center; gap:12px;">
-                <span style="font-size:28px; line-height:1;">âš ï¸</span>
+                <span style="font-size:28px; line-height:1;">&#9888;&#65039;</span>
                 <div>
                     <div style="font-weight:700; color:#92400e; font-size:15px; margin-bottom:3px;">Email Not Verified</div>
                     <div style="font-size:13px; color:#b45309;">Your profile is hidden from other members until you verify your email address.</div>
@@ -259,7 +259,7 @@
             margin-bottom: 22px;
             box-shadow: 0 4px 16px rgba(34,197,94,0.12);
         ">
-            <span style="font-size:24px;">âœ…</span>
+            <span style="font-size:24px;">&#10003;</span>
             <div>
                 <div style="font-weight:700; color:#166534; font-size:15px; margin-bottom:2px;">Email Verified</div>
                 <div style="font-size:13px; color:#15803d;">Your email is verified on {{ auth()->user()->email_verified_at->format('d M Y') }}. Your profile is visible to other members.</div>
@@ -309,7 +309,7 @@
                 @else
                     <button type="submit" name="set_primary" value="{{ $photo }}" formnovalidate style="position:absolute; top:5px; left:5px; background:rgba(255,255,255,0.8); border:none; padding:2px 5px; font-size:10px; border-radius:4px; cursor:pointer; color:#E91E63; font-weight:bold; line-height: 1;">Set Primary</button>
                 @endif
-                <button type="submit" name="delete_photos[]" value="{{ $photo }}" formnovalidate style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.8); border:none; padding:2px 5px; font-size:10px; border-radius:4px; cursor:pointer; color:#fff; font-weight:bold; line-height: 1;" onclick="return confirm('Delete this photo?')">âœ•</button>
+                <button type="submit" name="delete_photos[]" value="{{ $photo }}" formnovalidate style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.8); border:none; padding:2px 5px; font-size:10px; border-radius:4px; cursor:pointer; color:#fff; font-weight:bold; line-height: 1;" onclick="return confirm('Delete this photo?')">&times;</button>
               </div>
               @endforeach
 
@@ -419,7 +419,12 @@
             <div class="form-grid">
               <div class="form-group">
                 <label>City <span>*</span></label>
-                <input type="text" name="city" class="form-control" value="{{ old('city', $user->city) }}">
+                <select name="city" class="form-control">
+                  <option value="">Select City</option>
+                  @foreach(get_cities() as $city)
+                    <option value="{{ $city }}" {{ old('city', $user->city) == $city ? 'selected' : '' }}>{{ $city }}</option>
+                  @endforeach
+                </select>
               </div>
               <div class="form-group">
                 <label>Pincode <span>*</span></label>
@@ -428,7 +433,10 @@
               <div class="form-group" style="grid-column: 1 / -1;">
                 <label>Preferred Location</label>
                 <select name="preferred_location" class="form-control">
-                  <option value="Delhi NCR" {{ old('preferred_location', $user->preferred_location) == 'Delhi NCR' ? 'selected' : '' }}>Delhi NCR</option>
+                  <option value="">Select City</option>
+                  @foreach(get_cities() as $city)
+                    <option value="{{ $city }}" {{ old('preferred_location', $user->preferred_location) == $city ? 'selected' : '' }}>{{ $city }}</option>
+                  @endforeach
                 </select>
               </div>
               <div class="form-group" style="grid-column: 1 / -1;">
@@ -502,7 +510,7 @@
                     
                     <!-- Price Input inside the pill -->
                     <span id="price_input_{{ $category->slug }}" class="category-price-input" style="display: {{ $isChecked ? 'inline-flex' : 'none' }}; align-items: center; background: rgba(255, 255, 255, 0.9); padding: 2px 8px; border-radius: 12px; margin-left: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #fbcfe8;">
-                      <span style="color: #E91E63; font-weight: 700; font-size: 12px; margin-right: 2px;">â‚¹</span>
+                      <span style="color: #E91E63; font-weight: 700; font-size: 12px; margin-right: 2px;">&#8377;</span>
                       <input type="number" name="category_prices[{{ $category->slug }}]" value="{{ $priceValue ? floatval($priceValue) : '' }}" placeholder="{{ floatval($category->prices) }}" style="width: 45px; border: none; background: transparent; outline: none; font-size: 12px; color: #E91E63; font-weight: 700; padding: 0;" onclick="event.preventDefault();" onmousedown="event.stopPropagation();">
                     </span>
                   </span>
@@ -666,7 +674,7 @@
             @php
                 $age = $user->dob ? \Carbon\Carbon::parse($user->dob)->age : 'N/A';
             @endphp
-            <div class="preview-meta">{{ $age }} â€¢ {{ $user->height ?? "Height N/A" }} â€¢ <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> {{ $user->city ?? 'City N/A' }}</div>
+            <div class="preview-meta">{{ $age }} &bull; {{ $user->height ?? "Height N/A" }} &bull; <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> {{ $user->city ?? 'City N/A' }}</div>
             
             <div class="preview-rating">
               <svg width="14" height="14" fill="#FBBF24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
@@ -780,23 +788,23 @@
       .then(function(data) {
         if (msgBox) msgBox.style.display = 'block';
         if (data.success) {
-          if (msgBox) msgBox.innerHTML = '<div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #22c55e;border-radius:12px;padding:14px 20px;color:#166534;font-size:14px;font-weight:600;">📬 ' + data.message + '</div>';
-          btn.innerHTML = '✅ Email Sent! Check your inbox';
+          if (msgBox) msgBox.innerHTML = '<div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #22c55e;border-radius:12px;padding:14px 20px;color:#166534;font-size:14px;font-weight:600;">&#128140; ' + data.message + '</div>';
+          btn.innerHTML = '&#10003; Email Sent! Check your inbox';
           btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
           btn.style.boxShadow = '0 4px 12px rgba(34,197,94,0.35)';
           btn.style.opacity = '1';
         } else {
-          if (msgBox) msgBox.innerHTML = '<div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:12px;padding:14px 20px;color:#991b1b;font-size:14px;font-weight:600;">⚠️ ' + data.message + '</div>';
+          if (msgBox) msgBox.innerHTML = '<div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:12px;padding:14px 20px;color:#991b1b;font-size:14px;font-weight:600;">&#9888; ' + data.message + '</div>';
           btn.disabled = false;
           btn.style.opacity = '1';
-          btn.innerHTML = '📧 Send Verification Email';
+          btn.innerHTML = '&#128231; Send Verification Email';
         }
       })
       .catch(function() {
-        if (msgBox) { msgBox.style.display = 'block'; msgBox.innerHTML = '<div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:12px;padding:14px 20px;color:#991b1b;font-size:14px;font-weight:600;">❌ Network error. Please try again.</div>'; }
+        if (msgBox) { msgBox.style.display = 'block'; msgBox.innerHTML = '<div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:12px;padding:14px 20px;color:#991b1b;font-size:14px;font-weight:600;">&#10007; Network error. Please try again.</div>'; }
         btn.disabled = false;
         btn.style.opacity = '1';
-        btn.innerHTML = '📧 Try Again';
+        btn.innerHTML = '&#128231; Try Again';
       });
     }
   </script>
