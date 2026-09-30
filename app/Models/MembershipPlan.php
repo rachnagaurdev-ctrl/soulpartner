@@ -23,6 +23,7 @@ class MembershipPlan extends Model
         'is_active',
         'sort_order',
         'features',
+        'refund_percentage',
     ];
 
     protected $casts = [
@@ -55,6 +56,7 @@ class MembershipPlan extends Model
             'icon'     => $this->icon ?? '🛡️',
             'popular'  => $this->is_popular,
             'features' => $this->features ?? [],
+            'refund_percentage' => $this->refund_percentage,
         ];
     }
 }

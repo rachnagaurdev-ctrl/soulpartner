@@ -126,7 +126,15 @@ if(!function_exists('get_catgeories')){
 
 if(!function_exists('get_partners')){
     function get_partners($limit = 12) {
-        $query = \App\Models\User::where('is_admin', 0)->whereIn('iwantto', ['become', 'both']);
+        $query = \App\Models\User::where('is_admin', 0)
+            ->whereIn('iwantto', ['become', 'both'])
+            ->where('is_verified', 1)
+            ->where('is_active', 1)
+            ->whereNotNull('email_verified_at')
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->where('category', '!=', '[]')
+            ->where('category', '!=', 'null');
         
         $request = request();
 

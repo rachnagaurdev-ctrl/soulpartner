@@ -108,7 +108,11 @@ public function partners(Request $request)
         ->whereIn('iwantto', ['become', 'both'])
         ->where('is_verified', 1)
         ->where('is_active', 1)
-        ->whereNotNull('email_verified_at'); // Only show email-verified users
+        ->whereNotNull('email_verified_at') // Only show email-verified users
+        ->whereNotNull('category')
+        ->where('category', '!=', '')
+        ->where('category', '!=', '[]')
+        ->where('category', '!=', 'null');
 
     if ($request->filled('category')) {
         $categories = is_array($request->category) ? $request->category : explode(',', $request->category);
@@ -155,7 +159,15 @@ public function partners(Request $request)
 public function partnerProfile($profile_id)
 {
     $partner = \App\Models\User::where('profile_id', $profile_id)
+        ->where('is_admin', 0)
+        ->whereIn('iwantto', ['become', 'both'])
         ->where('is_active', 1)
+        ->where('is_verified', 1)
+        ->whereNotNull('email_verified_at')
+        ->whereNotNull('category')
+        ->where('category', '!=', '')
+        ->where('category', '!=', '[]')
+        ->where('category', '!=', 'null')
         ->firstOrFail();
         
     $bookedSlots = \App\Models\Booking::where('partner_id', $partner->id)
@@ -163,8 +175,13 @@ public function partnerProfile($profile_id)
         ->where('status', 'confirmed')
         ->get(['booking_date', 'booking_time', 'end_time']);
         
+    $reviews = \App\Models\Review::with('reviewer')
+        ->where('reviewee_id', $partner->id)
+        ->latest()
+        ->get();
+        
     $razorpayKey = env('RAZORPAY_KEY_ID');
-    return view('partners-profile', compact('partner', 'razorpayKey', 'bookedSlots'));
+    return view('partners-profile', compact('partner', 'razorpayKey', 'bookedSlots', 'reviews'));
 }
 
 }

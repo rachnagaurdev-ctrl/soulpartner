@@ -17,8 +17,8 @@
             @if(!empty($plan['badge']))
             <div class="plan-best-value-badge">{{ $plan['badge'] }}</div>
             @endif
-            @if($key === 'yearly')
-            <div class="plan-refund-badge">50%<br><span>Refund</span></div>
+            @if(!empty($plan['refund_percentage']))
+            <div class="plan-refund-badge">{{ $plan['refund_percentage'] }}%<br><span>Refund</span></div>
             @endif
             <div class="plan-card-header">
               <div class="plan-icon plan-icon-{{ $key }}">{!! $plan['icon'] ?? '<i class="fa-solid fa-shield-halved"></i>' !!}</div>
@@ -31,7 +31,9 @@
 @php
 $matchesValue = $plan['matches'];
 $text = '';
-if (is_numeric($matchesValue)) {
+if ($matchesValue == -1) {
+    $text = 'Unlimited Matches';
+} elseif (is_numeric($matchesValue)) {
     $text = $matchesValue . ' Matches';
 } elseif (str_contains(strtolower($matchesValue), 'match')) {
     $text = $matchesValue; // already has 'match' in it

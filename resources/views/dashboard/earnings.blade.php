@@ -11,10 +11,15 @@
     margin-bottom: 30px;
   }
   .earnings-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 15px;
+    width: 100%;
+  }
+  .earnings-form-grid .form-group {
+    width: 48%;
   }
   .earnings-submit-btn {
     width: auto;
@@ -35,8 +40,11 @@
 
     /* Stack withdrawal form fields vertically */
     .earnings-form-grid {
-      grid-template-columns: 1fr !important;
+      flex-direction: column !important;
       gap: 12px;
+    }
+    .earnings-form-grid .form-group {
+      width: 100% !important;
     }
 
     /* Full-width submit button */
@@ -122,12 +130,12 @@
             @csrf
             <div class="earnings-form-grid">
               <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:14px; font-weight:500; color:#334155; margin-bottom:8px;">Amount (Min. ₹500)</label>
-                <input type="number" name="amount" min="500" style="width: 100%; border-radius:8px; border:1px solid #E2E8F0; padding:12px;" required>
+                <label style="font-size:14px; font-weight:500; color:#334155; margin-bottom:8px;">Amount (Min. ₹{{ $minWithdraw }})</label>
+                <input type="number" name="amount" min="{{ $minWithdraw }}" style="width: 100%; border-radius:8px; border:1px solid #E2E8F0; padding:12px;" required>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:14px; font-weight:500; color:#334155; margin-bottom:8px;">Account Details (Bank/UPI)</label>
-                <input type="text" name="account_details" style="width: 100%; border-radius:8px; border:1px solid #E2E8F0; padding:12px;" placeholder="UPI ID or Bank Acct No." required>
+                <label style="font-size:14px; font-weight:500; color:#334155; margin-bottom:8px;">UPI ID</label>
+                <input type="text" name="account_details" style="width: 100%; border-radius:8px; border:1px solid #E2E8F0; padding:12px;" placeholder="e.g. user@upi" required>
               </div>
             </div>
             <div>
@@ -164,6 +172,40 @@
                         <span style="background:#D1FAE5; color:#059669; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">Approved</span>
                       @else
                         <span style="background:#FEE2E2; color:#DC2626; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">Rejected</span>
+                      @endif
+                    </td>
+                  </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          @endif
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+          <h4 style="font-size:18px; font-weight:600; color:#1E293B; margin-bottom:20px; margin-top:0;">Wallet Transactions</h4>
+          @if($transactions->isEmpty())
+            <p style="color:#64748B; font-size: 14px;">No wallet transactions found.</p>
+          @else
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead style="border-bottom:1px solid #E2E8F0;">
+                  <tr>
+                    <th style="color:#64748B; font-weight:600; font-size:14px; padding: 12px 8px;">Date</th>
+                    <th style="color:#64748B; font-weight:600; font-size:14px; padding: 12px 8px;">Description</th>
+                    <th style="color:#64748B; font-weight:600; font-size:14px; padding: 12px 8px;">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($transactions as $t)
+                  <tr style="border-bottom:1px solid #F1F5F9;">
+                    <td style="color:#1E293B; font-size:14px; padding:16px 8px;">{{ $t->created_at->format('M d, Y h:i A') }}</td>
+                    <td style="color:#64748B; font-size:14px; padding:16px 8px;">{{ $t->description }}</td>
+                    <td style="padding:16px 8px;">
+                      @if($t->type === 'credit')
+                        <span style="color:#059669; font-weight:600;">+ ₹{{ number_format($t->amount, 2) }}</span>
+                      @else
+                        <span style="color:#DC2626; font-weight:600;">- ₹{{ number_format($t->amount, 2) }}</span>
                       @endif
                     </td>
                   </tr>

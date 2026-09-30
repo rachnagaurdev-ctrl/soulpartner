@@ -440,6 +440,7 @@
                 <label>Pincode <span>*</span></label>
                 <input type="text" name="pincode" class="form-control" value="{{ old('pincode', $user->pincode) }}" required>
               </div>
+              @if(Auth::user()->iwantto !== 'find')
               <div class="form-group" style="grid-column: 1 / -1;">
                 <label>Preferred Location</label>
                 <select name="preferred_location" class="form-control">
@@ -449,6 +450,8 @@
                   @endforeach
                 </select>
               </div>
+              @endif
+              @if(Auth::user()->iwantto !== 'find')
               <div class="form-group" style="grid-column: 1 / -1;">
                 <label>Availability Schedule <span>*</span></label>
                 <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
@@ -490,10 +493,12 @@
                   @endforeach
                 </div>
               </div>
+              @endif
             </div>
           </div>
 
           <!-- Categories, Interests & Looking For Grid -->
+          @if(Auth::user()->iwantto !== 'find')
           <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
             <div class="card">
               <div class="card-header">
@@ -503,7 +508,8 @@
               <p style="font-size: 13px; color: #64748B; margin-top: -15px; margin-bottom: 15px;">Select your primary categories (you can choose multiple).</p>
               
               @php
-                  $userCategories = explode(',', old('category', $user->category ?? ''));
+                  $oldCategory = old('category', $user->category ?? '');
+                  $userCategories = is_array($oldCategory) ? $oldCategory : explode(',', (string) $oldCategory);
                   $userCategoryPrices = old('category_prices', is_array($user->category_prices) ? $user->category_prices : json_decode($user->category_prices, true) ?? []);
               @endphp
               <div class="pill-group" style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -650,6 +656,7 @@
               </div>
             </div>
           </div>
+          @endif
 
           <div class="form-actions">
             <button type="button" class="btn-cancel">Cancel</button>
@@ -686,10 +693,12 @@
             @endphp
             <div class="preview-meta">{{ $age }} &bull; {{ $user->height ?? "Height N/A" }} &bull; <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> {{ $user->city ?? 'City N/A' }}</div>
             
+            @if($user->iwantto !== 'find')
             <div class="preview-rating">
               <svg width="14" height="14" fill="#FBBF24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
               New Partner <span style="color: #94A3B8; font-weight: normal;">(0 Reviews)</span>
             </div>
+            @endif
 
             <div class="preview-tags">
               @php
@@ -724,7 +733,9 @@
               <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> Age: {{ $age }}</div>
               <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg> {{ \Illuminate\Support\Str::limit($langs, 20) }}</div>
               <div><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> {{ $availString }}</div>
+              @if($user->iwantto !== 'find')
               <div style="grid-column: span 2;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Within 1 hour</div>
+              @endif
             </div>
           </div>
         </div>

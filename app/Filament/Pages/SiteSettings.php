@@ -54,6 +54,8 @@ class SiteSettings extends Page
             'social_facebook'  => Setting::get('social_facebook', ''),
             'social_instagram' => Setting::get('social_instagram', ''),
             'social_youtube'   => Setting::get('social_youtube', ''),
+            // Wallet & Payouts
+            'min_withdraw_amount' => Setting::get('min_withdraw_amount', 500),
         ];
 
         $this->form->fill($this->data);
@@ -206,6 +208,15 @@ class SiteSettings extends Page
                             Forms\Components\TextInput::make('social_facebook')->label('Facebook')->url()->prefixIcon('heroicon-o-link'),
                             Forms\Components\TextInput::make('social_instagram')->label('Instagram')->url()->prefixIcon('heroicon-o-link'),
                             Forms\Components\TextInput::make('social_youtube')->label('YouTube')->url()->prefixIcon('heroicon-o-link'),
+                        ]),
+
+                    Forms\Components\Section::make('Wallet & Payouts')
+                        ->schema([
+                            Forms\Components\TextInput::make('min_withdraw_amount')
+                                ->label('Minimum Withdrawal Amount (₹)')
+                                ->numeric()
+                                ->default(500)
+                                ->required(),
                         ]),
 
                 ])->columnSpan(['lg' => 1]),

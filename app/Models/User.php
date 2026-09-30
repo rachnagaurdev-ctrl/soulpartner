@@ -54,6 +54,7 @@ class User extends Authenticatable implements FilamentUser
         'referral_code',
         'referred_by',
         'wallet_balance',
+        'is_salary_based',
         'is_active',
         'last_seen_at',
     ];

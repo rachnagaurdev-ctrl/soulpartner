@@ -71,6 +71,59 @@ class BookingResource extends Resource
                 Tables\Columns\TextColumn::make('booking_time')->label('Start/Time')->time()->sortable(),
                 Tables\Columns\TextColumn::make('end_time')->label('End Time')->time()->sortable(),
                 Tables\Columns\TextColumn::make('amount')->money('INR')->sortable(),
+                Tables\Columns\TextColumn::make('commission_amount')
+                    ->label('Commission')
+                    ->getStateUsing(function ($record) {
+                        $settings = \App\Models\CommissionSetting::first();
+                        if (!$settings || $settings->commission_value <= 0) return 0;
+                        
+                        $isCommissionBased = $record->partner && !$record->partner->is_salary_based;
+                        if (!$isCommissionBased) return 0;
+
+                        if ($settings->commission_value <= 100) {
+                            return ($record->amount * $settings->commission_value) / 100;
+                        }
+                        return $settings->commission_value;
+                    })
+                    ->money('INR'),
+                Tables\Columns\TextColumn::make('payable_amount')
+                    ->label('Payable Amount')
+                    ->getStateUsing(function ($record) {
+                        $settings = \App\Models\CommissionSetting::first();
+                        if (!$settings) return $record->amount;
+
+                        $isCommissionBased = $record->partner && !$record->partner->is_salary_based;
+                        
+                        if (!$isCommissionBased) {
+                            return (float) $settings->salary_per_booking;
+                        }
+
+                        $commission = 0;
+                        if ($settings->commission_value > 0) {
+                            if ($settings->commission_value <= 100) {
+                                $commission = ($record->amount * $settings->commission_value) / 100;
+                            } else {
+                                $commission = $settings->commission_value;
+                            }
+                        }
+                        $payable = $record->amount - $commission;
+                        return $payable > 0 ? $payable : 0;
+                    })
+                    ->money('INR')
+                    ->color('success'),
+                Tables\Columns\BadgeColumn::make('is_bonus_paid')
+                    ->label('Bonus Status')
+                    ->getStateUsing(function ($record) {
+                        $isCommissionBased = $record->partner && !$record->partner->is_salary_based;
+                        if ($isCommissionBased) return 'N/A';
+                        
+                        return $record->is_bonus_paid ? 'Paid' : 'Pending';
+                    })
+                    ->colors([
+                        'secondary' => 'N/A',
+                        'success' => 'Paid',
+                        'warning' => 'Pending',
+                    ]),
                 Tables\Columns\BadgeColumn::make('status')
                     ->colors([
                         'warning' => 'pending',
@@ -84,7 +137,36 @@ class BookingResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('cancel_details')
+                    ->label('Cancel Reason')
+                    ->icon('heroicon-o-eye')
+                    ->color('danger')
+                    ->visible(fn ($record) => strtolower($record->status) === 'cancelled')
+                    ->modalHeading('Cancellation Details')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->form([
+                        Forms\Components\Placeholder::make('cancelled_by')
+                            ->label('Cancelled By')
+                            ->content(fn ($record) => $record->user ? $record->user->name . ' (Client)' : 'Unknown'),
+                        Forms\Components\Textarea::make('cancel_reason')
+                            ->label('Reason for Cancellation')
+                            ->disabled(),
+                        Forms\Components\Placeholder::make('refund_details')
+                            ->label('Refund Details')
+                            ->content(function ($record) {
+                                $transaction = \App\Models\WalletTransaction::where('user_id', $record->user_id)
+                                    ->where('description', 'like', '%cancelled booking #' . $record->id . '%')
+                                    ->first();
+                                if ($transaction) {
+                                    return '₹' . number_format($transaction->amount, 2) . ' refunded to client wallet. (' . $transaction->description . ')';
+                                }
+                                return 'No refund processed.';
+                            }),
+                    ])
+                    ->fillForm(fn ($record) => [
+                        'cancel_reason' => $record->cancel_reason ?: 'No reason provided.'
+                    ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

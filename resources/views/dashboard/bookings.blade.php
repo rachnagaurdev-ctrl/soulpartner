@@ -84,6 +84,92 @@
 .stat-label { font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
 .stat-value { font-size: 28px; font-weight: 800; color: #1E293B; line-height: 1; }
 
+/* ── Target Highlight ───────────────────────────────── */
+.target-highlight {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+.target-highlight::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 250px; height: 100%;
+    background: radial-gradient(circle at right, rgba(233,30,99,0.2), transparent 70%);
+}
+.target-highlight.target-met {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+.target-highlight.target-met::before {
+    background: radial-gradient(circle at right, rgba(255,255,255,0.2), transparent 70%);
+}
+.target-info h3 {
+    margin: 0 0 6px 0;
+    font-size: 20px;
+    font-weight: 800;
+}
+.target-info p {
+    margin: 0;
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+}
+.target-stats {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1;
+}
+.target-numbers {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+}
+.completed-num {
+    color: #fce7f3;
+    font-size: 18px;
+    font-weight: 800;
+}
+.target-highlight.target-met .completed-num { color: #fff; }
+.progress-bar-container {
+    height: 8px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    background: #E91E63;
+    border-radius: 10px;
+    transition: width 0.5s ease-out;
+}
+.target-highlight.target-met .progress-bar {
+    background: #fff;
+}
+.target-badge {
+    align-self: flex-start;
+    background: #fff;
+    color: #047857;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    margin-top: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
 /* ── Next booking banner ────────────────────────────── */
 .next-booking {
     background: linear-gradient(135deg, #fff, #fdf2f8 70%);
@@ -387,6 +473,29 @@
         ->whereIn('status', ['upcoming','confirmed'])
         ->sortBy(fn($b) => \Carbon\Carbon::parse($b->booking_date)->format('Y-m-d') . ' ' . $b->booking_time)
         ->first();
+
+    $user = Auth::user();
+    $isSalaryPartner = false;
+    $target = 0;
+    $targetCompleted = 0;
+    $bonusAmount = 0;
+    
+    if ($user && in_array($user->iwantto, ['become', 'both'])) {
+        $settings = \App\Models\CommissionSetting::first();
+        if ($settings) {
+            if ($user->is_salary_based) {
+                $isSalaryPartner = true;
+                $target = $settings->default_target;
+                $bonusAmount = $settings->salary_target_bonus;
+                
+                $targetCompleted = \App\Models\Booking::where('partner_id', $user->id)
+                    ->where('status', 'completed')
+                    ->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->count();
+            }
+        }
+    }
 @endphp
 
 <div class="middle-col">
@@ -443,10 +552,36 @@
         </div>
     </div>
 
+    {{-- ── Target Highlight for Salary Partners ── --}}
+    @if($isSalaryPartner && $target > 0)
+        @php
+            $progressPercent = $target > 0 ? min(100, round(($targetCompleted / $target) * 100)) : 0;
+            $isTargetMet = $targetCompleted >= $target;
+        @endphp
+        <div class="target-highlight {{ $isTargetMet ? 'target-met' : '' }}">
+            <div class="target-info">
+                <h3>🎯 Monthly Target Progress</h3>
+                <p>Complete <strong>{{ $target }} bookings</strong> this month to receive your ₹{{ number_format($bonusAmount) }} per booking bonus!</p>
+            </div>
+            <div class="target-stats">
+                <div class="target-numbers">
+                    <span><span class="completed-num">{{ $targetCompleted }}</span> / {{ $target }} Bookings</span>
+                    <span>{{ $progressPercent }}%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {{ $progressPercent }}%;"></div>
+                </div>
+                @if($isTargetMet)
+                    <div class="target-badge">🎉 Target Met! Bonus Active</div>
+                @endif
+            </div>
+        </div>
+    @endif
+
     {{-- ── Next booking banner ── --}}
     @if($nextBooking)
     @php
-        $diff = now()->diffInDays(\Carbon\Carbon::parse($nextBooking->booking_date), false);
+        $diff = (int) now()->diffInDays(\Carbon\Carbon::parse($nextBooking->booking_date), false);
         $isPartnerNext = $nextBooking->partner_id == auth()->id();
         $otherPersonNext = $isPartnerNext ? $nextBooking->user : $nextBooking->partner;
     @endphp
@@ -644,14 +779,20 @@
                             </button>
                         </div>
                         @if(!$booking->started_at)
-                            @if(!$isPartner)
-                                <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px; width:100%;">
-                                    <input type="text" id="start_code_{{ $booking->id }}" placeholder="Enter Partner's OTP" style="padding: 8px; border: 1px solid #E2E8F0; border-radius: 6px; font-size:12px; width: 100%; text-align:center; letter-spacing:1px; outline:none;" maxlength="4">
-                                    <button class="btn-act btn-act-primary" onclick="startBooking({{ $booking->id }})" style="width: 100%; justify-content:center;">Start Booking</button>
-                                </div>
+                            @if(date('Y-m-d') >= $booking->booking_date || env('TESTING_BOOKING_MODE', false))
+                                @if(!$isPartner)
+                                    <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px; width:100%;">
+                                        <input type="text" id="start_code_{{ $booking->id }}" placeholder="Enter Partner's OTP" style="padding: 8px; border: 1px solid #E2E8F0; border-radius: 6px; font-size:12px; width: 100%; text-align:center; letter-spacing:1px; outline:none;" maxlength="4">
+                                        <button class="btn-act btn-act-primary" onclick="startBooking({{ $booking->id }})" style="width: 100%; justify-content:center;">Start Booking</button>
+                                    </div>
+                                @else
+                                    <div style="font-size:12px; color:#1E293B; background:#F8FAFC; padding:8px; border-radius:6px; text-align:center; font-weight:600; margin-top:10px; border:1px dashed #CBD5E1;">
+                                        Share OTP with customer:<br><span style="font-size:18px; letter-spacing:4px; color:#E91E63; display:block; margin-top:4px;">{{ $booking->start_code }}</span>
+                                    </div>
+                                @endif
                             @else
-                                <div style="font-size:12px; color:#1E293B; background:#F8FAFC; padding:8px; border-radius:6px; text-align:center; font-weight:600; margin-top:10px; border:1px dashed #CBD5E1;">
-                                    Share OTP with customer:<br><span style="font-size:18px; letter-spacing:4px; color:#E91E63; display:block; margin-top:4px;">{{ $booking->start_code }}</span>
+                                <div style="font-size:12px; color:#64748B; background:#F1F5F9; padding:8px; border-radius:6px; text-align:center; margin-top:10px;">
+                                    Booking starts on {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M') }}. Options will be available then.
                                 </div>
                             @endif
                         @elseif(!$booking->ended_at)
@@ -665,7 +806,7 @@
                         @endif
 
                         @if(!$booking->started_at)
-                        <a href="#" class="btn-act btn-act-grey" style="margin-top:10px;">
+                        <a href="#" onclick="cancelBooking({{ $booking->id }}); return false;" class="btn-act btn-act-grey" style="margin-top:10px;">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Cancel
                         </a>
@@ -675,7 +816,7 @@
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                             Pay Now
                         </a>
-                        <a href="#" class="btn-act btn-act-grey">
+                        <a href="#" onclick="cancelBooking({{ $booking->id }}); return false;" class="btn-act btn-act-grey">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Cancel
                         </a>
@@ -694,15 +835,19 @@
                                 Reviewed
                             </button>
                         @endif
-                        <a href="#" class="btn-act btn-act-grey">
+                        @if(!$isPartner)
+                        <a href="{{ route('partners.profile', $otherPerson->profile_id ?? '') }}" class="btn-act btn-act-grey">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             Book Again
                         </a>
+                        @endif
                     @elseif(strtolower($booking->status) == 'cancelled')
-                        <a href="#" class="btn-act btn-act-grey">
+                        @if(!$isPartner)
+                        <a href="{{ route('partners.profile', $otherPerson->profile_id ?? '') }}" class="btn-act btn-act-grey">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             Book Again
                         </a>
+                        @endif
                     @endif
                 </div>
 
@@ -861,23 +1006,92 @@ function startBooking(id) {
 }
 
 function endBooking(id) {
-    if (!confirm("Are you sure you want to end this booking?")) return;
+    // Custom Confirmation Modal
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:99999; display:flex; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+        <div style="background:#fff; width:100%; max-width:400px; border-radius:16px; padding:24px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.15);">
+            <div style="width:48px; height:48px; border-radius:50%; background:#FEE2E2; color:#EF4444; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 style="margin:0 0 10px; font-size:18px; color:#0F172A;">End Booking?</h3>
+            <p style="margin:0 0 24px; color:#64748B; font-size:14px; line-height:1.5;">Are you sure you want to end this booking? This action cannot be undone.</p>
+            <div style="display:flex; gap:12px;">
+                <button id="cancelEndBtn" style="flex:1; background:#F1F5F9; color:#475569; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">Cancel</button>
+                <button id="confirmEndBtn" style="flex:1; background:#EF4444; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">End Booking</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 
-    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    fetch('/book/' + id + '/end', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            showToast("Booking Ended", data.message, "success");
-            setTimeout(() => window.location.reload(), 1500);
-        } else {
-            showToast("Failed", data.message || "Failed to end booking.", "error");
-        }
-    })
-    .catch(err => { console.error(err); showToast("Error", "An error occurred.", "error"); });
+    document.getElementById('cancelEndBtn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+
+    document.getElementById('confirmEndBtn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch('/book/' + id + '/end', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast("Booking Ended", data.message, "success");
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast("Failed", data.message || "Failed to end booking.", "error");
+            }
+        })
+        .catch(err => { console.error(err); showToast("Error", "An error occurred.", "error"); });
+    });
+}
+
+function cancelBooking(id) {
+    // Custom Confirmation Modal for Cancelling
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:99999; display:flex; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+        <div style="background:#fff; width:100%; max-width:400px; border-radius:16px; padding:24px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.15);">
+            <div style="width:48px; height:48px; border-radius:50%; background:#FEE2E2; color:#EF4444; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 style="margin:0 0 10px; font-size:18px; color:#0F172A;">Cancel Booking?</h3>
+            <p style="margin:0 0 16px; color:#64748B; font-size:14px; line-height:1.5;">Are you sure you want to cancel this booking? The refund will be calculated based on the cancellation policy.</p>
+            <textarea id="cancelReasonInput" placeholder="Reason for cancellation (optional)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #E2E8F0; outline:none; background:#F8FAFC; resize:vertical; font-family:inherit; font-size:13px; margin-bottom:16px;" rows="2"></textarea>
+            <div style="display:flex; gap:12px;">
+                <button id="cancelCancelBtn" style="flex:1; background:#F1F5F9; color:#475569; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">Keep Booking</button>
+                <button id="confirmCancelBtn" style="flex:1; background:#EF4444; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">Cancel Booking</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('cancelCancelBtn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+
+    document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+        const reason = document.getElementById('cancelReasonInput').value;
+        document.body.removeChild(modal);
+        const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch('/book/' + id + '/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+            body: JSON.stringify({ reason: reason })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast("Booking Cancelled", data.message, "success");
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast("Failed", data.message || "Failed to cancel booking.", "error");
+            }
+        })
+        .catch(err => { console.error(err); showToast("Error", "An error occurred.", "error"); });
+    });
 }
 
 function openReviewModal(bookingId, partnerName) {

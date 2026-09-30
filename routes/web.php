@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/membership', [App\Http\Controllers\DashboardController::class, 'membership'])->name('dashboard.membership');
     Route::post('/dashboard/membership/toggle-autorenew', [App\Http\Controllers\DashboardController::class, 'toggleAutoRenew']);
     Route::get('/dashboard/settings', [App\Http\Controllers\DashboardController::class, 'settings'])->name('dashboard.settings');
+    Route::get('/dashboard/salary', [App\Http\Controllers\DashboardController::class, 'salary'])->name('dashboard.salary');
+    Route::post('/dashboard/salary/request', [App\Http\Controllers\DashboardController::class, 'submitSalaryRequest'])->name('dashboard.salary.request');
     // Email verification send (auth-protected)
     Route::post('/email/send-verification', [App\Http\Controllers\AuthController::class, 'sendVerificationEmail'])->name('email.send-verification');
     // Chat
@@ -55,6 +57,7 @@ Route::middleware('auth')->group(function () {
     // Booking Actions
     Route::post('/book/{id}/start', [App\Http\Controllers\BookingController::class, 'startBooking'])->name('booking.start');
     Route::post('/book/{id}/end', [App\Http\Controllers\BookingController::class, 'endBooking'])->name('booking.end');
+    Route::post('/book/{id}/cancel', [App\Http\Controllers\BookingController::class, 'cancelBooking'])->name('booking.cancel');
     Route::post('/book/{id}/review', [App\Http\Controllers\BookingController::class, 'submitReview'])->name('booking.review');
 
     // Video Call API

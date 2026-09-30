@@ -23,6 +23,7 @@ class Booking extends Model
         'start_code',
         'started_at',
         'ended_at',
+        'cancel_reason',
     ];
 
     protected $casts = [

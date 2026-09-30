@@ -303,7 +303,7 @@
                                 <div class="booking-field">
                                     <label for="bookingDate">Select Date</label>
                                     <div class="input-icon-wrap">
-                                        <input type="date" id="bookingDate" value="{{ date('Y-m-d') }}">
+                                        <input type="date" id="bookingDate" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}">
                                         <span class="input-icon">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d80b76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                         </span>
@@ -389,14 +389,14 @@
                                     </svg>
                                     Book Now
                                 </button>
-
+<!-- 
                                 <button type="button" class="btn-chat-now" id="chatNowBtn">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                     </svg>
                                     Chat Now
-                                </button>
+                                </button> -->
                             </form>
                         </div>
                     </div>
@@ -505,7 +505,11 @@
         <div class="service-price-card">
             <div class="service-icon-box">
                 @if($cat->icon)
-                    <span style="font-size: 24px; display:flex; align-items:center; justify-content:center; line-height: 1;">{!! $cat->icon !!}</span>
+                    @if(preg_match('/^[a-z0-9-]+$/i', $cat->icon))
+                        <i class="fa-solid fa-{{$cat->icon}}" style="color: #d80b76; font-size: 24px;"></i>
+                    @else
+                        <span style="font-size: 24px; display:flex; align-items:center; justify-content:center; line-height: 1;">{!! $cat->icon !!}</span>
+                    @endif
                 @else
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d80b76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
                 @endif
@@ -529,149 +533,71 @@
 
             <!-- Reviews Section -->
             <section class="profile-section-block" id="reviewsSec">
+                @php
+                    $totalReviews = $reviews->count();
+                    $avgRating = $totalReviews > 0 ? round($reviews->avg('rating'), 1) : 0;
+                    
+                    $starsCount = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+                    foreach($reviews as $r) {
+                        $ratingInt = (int) round($r->rating);
+                        if(isset($starsCount[$ratingInt])) {
+                            $starsCount[$ratingInt]++;
+                        }
+                    }
+                @endphp
                 <div class="reviews-header-bar">
-                    <h2 class="section-title">Reviews (120)</h2>
-                    <a href="#reviewsSec" class="view-all-link">View All →</a>
+                    <h2 class="section-title">Reviews ({{ $totalReviews }})</h2>
                 </div>
 
                 <div class="reviews-main-grid">
                     <!-- Left: Rating Summary & Progress Bars -->
                     <div class="rating-breakdown-card">
-                        <div class="rating-big-score">4.8</div>
-                        <div class="rating-big-stars">★★★★★</div>
-                        <div class="rating-total-reviews">(120 Reviews)</div>
+                        <div class="rating-big-score">{{ number_format($avgRating, 1) }}</div>
+                        <div class="rating-big-stars">{{ str_repeat('★', round($avgRating)) }}{{ str_repeat('☆', 5 - round($avgRating)) }}</div>
+                        <div class="rating-total-reviews">({{ $totalReviews }} Reviews)</div>
 
                         <!-- Progress Bars -->
                         <div class="breakdown-bars-list">
+                            @foreach([5, 4, 3, 2, 1] as $star)
+                            @php
+                                $pct = $totalReviews > 0 ? round(($starsCount[$star] / $totalReviews) * 100) : 0;
+                            @endphp
                             <div class="bar-row">
-                                <span class="bar-label">5 ★</span>
+                                <span class="bar-label">{{ $star }} ★</span>
                                 <div class="bar-track">
-                                    <div class="bar-fill" style="width: 88%;"></div>
+                                    <div class="bar-fill" style="width: {{ $pct }}%;"></div>
                                 </div>
-                                <span class="bar-pct">88%</span>
+                                <span class="bar-pct">{{ $pct }}%</span>
                             </div>
-
-                            <div class="bar-row">
-                                <span class="bar-label">4 ★</span>
-                                <div class="bar-track">
-                                    <div class="bar-fill" style="width: 8%;"></div>
-                                </div>
-                                <span class="bar-pct">8%</span>
-                            </div>
-
-                            <div class="bar-row">
-                                <span class="bar-label">3 ★</span>
-                                <div class="bar-track">
-                                    <div class="bar-fill" style="width: 2%;"></div>
-                                </div>
-                                <span class="bar-pct">2%</span>
-                            </div>
-
-                            <div class="bar-row">
-                                <span class="bar-label">2 ★</span>
-                                <div class="bar-track">
-                                    <div class="bar-fill" style="width: 1%;"></div>
-                                </div>
-                                <span class="bar-pct">1%</span>
-                            </div>
-
-                            <div class="bar-row">
-                                <span class="bar-label">1 ★</span>
-                                <div class="bar-track">
-                                    <div class="bar-fill" style="width: 1%;"></div>
-                                </div>
-                                <span class="bar-pct">1%</span>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
 
-                    <!-- Right: Review Cards List (3 Cards) -->
+                    <!-- Right: Review Cards List -->
                     <div class="customer-reviews-list">
-                        <!-- Review 1: Amit Verma -->
+                        @forelse($reviews as $review)
                         <div class="review-comment-card">
                             <div class="comment-author-row">
                                 <div class="author-avatar">
-                                    <img src="assets/images/partners/amit.jpg" alt="Amit Verma">
+                                    <img src="{{ $review->reviewer && $review->reviewer->profile_image ? asset('storage/' . $review->reviewer->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($review->reviewer ? $review->reviewer->name : 'User') . '&background=E91E63&color=fff' }}" alt="{{ $review->reviewer ? $review->reviewer->name : 'User' }}">
                                 </div>
                                 <div class="author-meta">
-                                    <h4 class="author-name">Amit Verma</h4>
-                                    <div class="stars-gold">★★★★★</div>
+                                    <h4 class="author-name">{{ $review->reviewer ? $review->reviewer->name : 'Anonymous User' }}</h4>
+                                    <div class="stars-gold">
+                                        {{ str_repeat('★', round($review->rating)) }}{{ str_repeat('☆', 5 - round($review->rating)) }}
+                                    </div>
                                 </div>
-                                <div class="comment-date">10 Sep 2025</div>
+                                <div class="comment-date">{{ $review->created_at->format('j M Y') }}</div>
                             </div>
                             <p class="comment-text">
-                                Priya is amazing! Very friendly, smart and made my evening really special. Highly
-                                recommended!
+                                {{ $review->comment }}
                             </p>
-                            <div class="comment-footer">
-                                <button type="button" class="btn-helpful">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path
-                                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3">
-                                        </path>
-                                    </svg>
-                                    <span>12</span>
-                                </button>
-                            </div>
                         </div>
-
-                        <!-- Review 2: Neha Kapoor -->
-                        <div class="review-comment-card">
-                            <div class="comment-author-row">
-                                <div class="author-avatar">
-                                    <img src="assets/images/partners/neha.jpg" alt="Neha Kapoor">
-                                </div>
-                                <div class="author-meta">
-                                    <h4 class="author-name">Neha Kapoor</h4>
-                                    <div class="stars-gold">★★★★★</div>
-                                </div>
-                                <div class="comment-date">5 Sep 2025</div>
-                            </div>
-                            <p class="comment-text">
-                                Had a great time with Priya. She is very genuine and fun to be around. Will book again
-                                soon!
-                            </p>
-                            <div class="comment-footer">
-                                <button type="button" class="btn-helpful">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path
-                                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3">
-                                        </path>
-                                    </svg>
-                                    <span>8</span>
-                                </button>
-                            </div>
+                        @empty
+                        <div class="review-comment-card" style="text-align: center; justify-content: center; display: flex; align-items: center; min-height: 150px;">
+                            <p style="color: #64748B;">No reviews yet.</p>
                         </div>
-
-                        <!-- Review 3: Rohit Mehta -->
-                        <div class="review-comment-card">
-                            <div class="comment-author-row">
-                                <div class="author-avatar">
-                                    <img src="assets/images/partners/rohan.jpg" alt="Rohit Mehta">
-                                </div>
-                                <div class="author-meta">
-                                    <h4 class="author-name">Rohit Mehta</h4>
-                                    <div class="stars-gold">★★★★★</div>
-                                </div>
-                                <div class="comment-date">28 Aug 2025</div>
-                            </div>
-                            <p class="comment-text">
-                                One of the best experiences I've had on this platform. Very sweet and professional.
-                            </p>
-                            <div class="comment-footer">
-                                <button type="button" class="btn-helpful">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path
-                                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3">
-                                        </path>
-                                    </svg>
-                                    <span>6</span>
-                                </button>
-                            </div>
-                        </div>
+                        @endforelse
                     </div>
                 </div>
             </section>

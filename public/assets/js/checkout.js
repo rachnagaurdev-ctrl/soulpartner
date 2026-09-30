@@ -72,9 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (radio) radio.checked = isCurrent;
     });
 
-    if (summaryPlanIcon) summaryPlanIcon.textContent = plan.icon || '💎';
+    if (summaryPlanIcon) summaryPlanIcon.innerHTML = plan.icon || '💎';
     if (summaryPlanName) summaryPlanName.textContent = plan.name;
-    if (summaryPlanPeriod) summaryPlanPeriod.textContent = `${plan.period} • ${plan.matches}`;
+    if (summaryPlanPeriod) {
+      let matchText = plan.matches == -1 ? 'Unlimited Matches' : (!isNaN(plan.matches) ? plan.matches + ' Matches' : plan.matches);
+      summaryPlanPeriod.textContent = `${plan.period} • ${matchText}`;
+    }
     if (summaryPlanPriceDisplay) summaryPlanPriceDisplay.textContent = `₹${Number(plan.price).toLocaleString('en-IN')}`;
 
     const subtotal = Number(plan.price);

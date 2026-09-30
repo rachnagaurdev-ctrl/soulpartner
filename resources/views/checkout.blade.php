@@ -100,14 +100,16 @@
 
                 <div class="plan-card-top">
                   <div class="plan-radio-circle"></div>
-                  <div class="plan-icon-symbol">{{ $plan['icon'] }}</div>
+                  <div class="plan-icon-symbol">{!!  $plan['icon'] !!}</div>
                   <div class="plan-titles">
                     <h3 class="plan-title-name">{{ $plan['name'] }}</h3>
                     <div class="plan-validity-pill">
 @php
 $matchesValue = $plan['matches'];
 $text = '';
-if (is_numeric($matchesValue)) {
+if ($matchesValue == -1) {
+    $text = 'Unlimited Matches';
+} elseif (is_numeric($matchesValue)) {
     $text = $matchesValue . ' Matches';
 } elseif (str_contains(strtolower($matchesValue), 'match')) {
     $text = $matchesValue; // already has 'match' in it
@@ -340,7 +342,7 @@ if (is_numeric($matchesValue)) {
 
             <!-- Plan Banner -->
             <div class="summary-plan-banner" id="summaryPlanBanner">
-              <div class="summary-plan-icon" id="summaryPlanIcon">{{ $selectedPlan['icon'] }}</div>
+              <div class="summary-plan-icon" id="summaryPlanIcon">{!! $selectedPlan['icon'] !!}</div>
               <div class="summary-plan-info">
                 <h4 id="summaryPlanName">{{ $selectedPlan['name'] }}</h4>
                 <p id="summaryPlanPeriod">{{ $selectedPlan['period'] }} • {{ $selectedPlan['matches'] }}</p>

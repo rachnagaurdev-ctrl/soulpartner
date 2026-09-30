@@ -258,7 +258,7 @@
                         </div>
 
                         <!-- Verified Profiles -->
-                        <div class="filter-group">
+                        <!-- <div class="filter-group">
                             <h4 class="filter-heading">Verified Profiles <span class="shield-icon">🛡️</span></h4>
                             <div class="filter-options">
                                 <label class="filter-checkbox-item">
@@ -267,7 +267,7 @@
                                     <span class="option-label">Only Verified</span>
                                 </label>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div class="filter-actions">
                             <button type="submit" class="btn btn-primary" style="width: 100%;">Apply Filters</button>

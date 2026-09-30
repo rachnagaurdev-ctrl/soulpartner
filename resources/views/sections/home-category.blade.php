@@ -21,7 +21,11 @@
                 @endif
                 <div class="category-icon">
                     @if($cat->icon)
-                       <i class="fa-solid fa-{{$cat->icon}}"></i>
+                        @if(preg_match('/^[a-z0-9-]+$/i', $cat->icon))
+                            <i class="fa-solid fa-{{$cat->icon}}"></i>
+                        @else
+                            <span style="display:inline-block; font-size: 1.5em; line-height: 1;">{!! $cat->icon !!}</span>
+                        @endif
                     @else
                         <i class="fa-solid fa-star"></i>
                     @endif
@@ -63,7 +67,7 @@
 
           {{-- View All Categories Card --}}
           <article class="category-card category-card--viewall">
-            <a href="{{ route('page.show', ['slug' => 'partners']) }}" class="viewall-inner">
+            <a href="{{ route('page.show', ['slug' => 'categories']) }}" class="viewall-inner">
               <div class="viewall-icon-wrap">
                 <span class="viewall-icon">
                   <i class="fa-solid fa-grid-2"></i>

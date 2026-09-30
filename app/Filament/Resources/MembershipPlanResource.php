@@ -82,8 +82,15 @@ class MembershipPlanResource extends Resource
                             ->required()
                             ->numeric()
                             ->label('Matches Limit')
-                            ->placeholder('e.g. 25 (Use 9999 for unlimited)')
+                            ->placeholder('e.g. 25 (Use -1 for unlimited)')
                             ->default(25),
+
+                        Forms\Components\TextInput::make('refund_percentage')
+                            ->numeric()
+                            ->label('Refund Percentage (If no match)')
+                            ->placeholder('e.g. 50')
+                            ->suffix('%')
+                            ->nullable(),
 
                         Forms\Components\TextInput::make('sort_order')
                             ->numeric()

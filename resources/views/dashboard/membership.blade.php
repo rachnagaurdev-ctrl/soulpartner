@@ -56,10 +56,10 @@
       flex-shrink: 0;
       background: #f0eaf8; /* default */
     }
-    .plan-icon-silver { background: #f0eaf8; }
-    .plan-icon-gold { background: #fff4e0; }
-    .plan-icon-premium { background: #f0ecf8; }
-    .plan-icon-yearly { background: #fce8f4; }
+    .plan-icon-silver { background: #f0eaf8; color: #5531a8; }
+    .plan-icon-gold { background: #fff4e0; color: #f5a623; }
+    .plan-icon-premium { background: #f0ecf8; color: #7d4bce; }
+    .plan-icon-yearly { background: #fce8f4; color: #ed287a; }
     
     .plan-name {
       font-size: 16px;
@@ -304,19 +304,21 @@
             <div class="plan-best-value-badge">{{ $plan->badge }}</div>
             @endif
             
-            @if($plan->slug === 'yearly')
-            <div class="plan-refund-badge">50%<br><span>Refund</span></div>
+            @if(!empty($plan->refund_percentage))
+            <div class="plan-refund-badge">{{ $plan->refund_percentage }}%<br><span>Refund</span></div>
             @endif
             
             <div class="plan-card-header">
-                <div class="plan-icon plan-icon-{{ $plan->slug }}">{{ $plan->icon ?? '🛡️' }}</div>
+                <div class="plan-icon plan-icon-{{ $plan->slug }}">{!! $plan->icon !!}</div>
                 <div>
                     <div class="plan-name {{ $plan->slug === 'yearly' ? 'plan-name-yearly' : '' }}">{{ $plan->name }}</div>
                     <div class="plan-price {{ $plan->slug === 'yearly' ? 'plan-price-yearly' : '' }}">₹{{ number_format($plan->price, 0) }} <span class="plan-period">/ {{ $plan->period ?? 'month' }}</span></div>
                 </div>
             </div>
             
-            <div class="plan-match-pill plan-match-{{ $plan->slug }}">{{ $plan->matches }}{{ is_numeric($plan->matches) ? ' Matches' : (str_contains(strtolower($plan->matches), 'match') ? '' : ' Matches') }}</div>
+            <div class="plan-match-pill plan-match-{{ $plan->slug }}">
+                {{ $plan->matches == -1 ? 'Unlimited Matches' : $plan->matches . (is_numeric($plan->matches) ? ' Matches' : (str_contains(strtolower($plan->matches), 'match') ? '' : ' Matches')) }}
+            </div>
             
             <ul class="plan-features {{ $plan->slug === 'yearly' ? 'plan-features-yearly' : '' }}">
                 @if(is_array($plan->features) || is_object($plan->features))

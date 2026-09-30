@@ -152,7 +152,7 @@ class UserResource extends Resource
                                     ->schema([
                                         Forms\Components\Toggle::make('is_active')->label('Active')->default(true),
                                         Forms\Components\Toggle::make('is_verified')->label('Verified')->default(false),
-                                        // Forms\Components\Toggle::make('is_admin')->label('Admin User')->default(false),
+                                        Forms\Components\Toggle::make('is_salary_based')->label('Salary Based Partner')->default(false),
                                         Forms\Components\TextInput::make('password')->password()->dehydrated(fn ($state) => filled($state))->required(fn (string $context): bool => $context === 'create')->label('Password')->columnSpanFull(),
                                     ])->columns(2),
                             ]),
@@ -209,6 +209,39 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('city')
                     ->searchable(),
 
+                Tables\Columns\TextColumn::make('monthly_target')
+                    ->label('Target (This Month)')
+                    ->getStateUsing(function ($record) {
+                        $settings = \App\Models\CommissionSetting::first();
+                        if (!$settings || !in_array($record->iwantto, ['become', 'both'])) return '-';
+
+                        if (!$record->is_salary_based) return 'N/A (Commission)';
+
+                        $target = $settings->default_target;
+                        $bookingsCount = \App\Models\Booking::where('partner_id', $record->id)
+                            ->where('status', 'completed')
+                            ->whereMonth('created_at', now()->month)
+                            ->whereYear('created_at', now()->year)
+                            ->count();
+
+                        return "{$bookingsCount} / {$target} Bookings";
+                    })
+                    ->description(function ($record) {
+                        $settings = \App\Models\CommissionSetting::first();
+                        if (!$settings || !in_array($record->iwantto, ['become', 'both'])) return null;
+                        
+                        if (!$record->is_salary_based) return null;
+
+                        $target = $settings->default_target;
+                        $bookingsCount = \App\Models\Booking::where('partner_id', $record->id)
+                            ->where('status', 'completed')
+                            ->whereMonth('created_at', now()->month)
+                            ->whereYear('created_at', now()->year)
+                            ->count();
+
+                        return $bookingsCount >= $target ? '✅ Target Met' : '⏳ In Progress';
+                    }),
+
                 Tables\Columns\BadgeColumn::make('iwantto')
                     ->label('Role')
                     ->colors([
@@ -245,6 +278,89 @@ class UserResource extends Resource
                     ->nullable(),
             ])
             ->actions([
+                Tables\Actions\Action::make('add_bonus')
+                    ->label('Add Bonus')
+                    ->icon('heroicon-o-currency-rupee')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->is_salary_based)
+                    ->form([
+                        Forms\Components\Placeholder::make('calculation_breakdown')
+                            ->label('Calculation Breakdown')
+                            ->content(function ($record) {
+                                $settings = \App\Models\CommissionSetting::first();
+                                $bonusPerBooking = $settings?->salary_target_bonus ?? 0;
+                                
+                                $bookingsCount = \App\Models\Booking::where('partner_id', $record->id)
+                                    ->where('status', 'completed')
+                                    ->where('is_bonus_paid', false)
+                                    ->whereMonth('created_at', now()->month)
+                                    ->whereYear('created_at', now()->year)
+                                    ->count();
+
+                                $total = $bookingsCount * $bonusPerBooking;
+                                return "{$bookingsCount} pending bookings × ₹{$bonusPerBooking} bonus = ₹{$total}";
+                            }),
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Bonus Amount (₹)')
+                            ->numeric()
+                            ->readOnly()
+                            ->default(function ($record) {
+                                $settings = \App\Models\CommissionSetting::first();
+                                $bonusPerBooking = $settings?->salary_target_bonus ?? 0;
+                                
+                                $bookingsCount = \App\Models\Booking::where('partner_id', $record->id)
+                                    ->where('status', 'completed')
+                                    ->where('is_bonus_paid', false)
+                                    ->whereMonth('created_at', now()->month)
+                                    ->whereYear('created_at', now()->year)
+                                    ->count();
+
+                                return $bookingsCount * $bonusPerBooking;
+                            })
+                            ->required(),
+                        Forms\Components\TextInput::make('description')
+                            ->label('Description')
+                            ->default('Custom Bonus')
+                            ->required(),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $amount = $data['amount'];
+                        if ($amount > 0) {
+                            $record->wallet_balance += $amount;
+                            $record->save();
+
+                            \App\Models\WalletTransaction::create([
+                                'user_id' => $record->id,
+                                'amount' => $amount,
+                                'type' => 'credit',
+                                'description' => $data['description'],
+                            ]);
+
+                            // Mark bookings as paid
+                            \App\Models\Booking::where('partner_id', $record->id)
+                                ->where('status', 'completed')
+                                ->where('is_bonus_paid', false)
+                                ->whereMonth('created_at', now()->month)
+                                ->whereYear('created_at', now()->year)
+                                ->update(['is_bonus_paid' => true]);
+
+                            try {
+                                \Illuminate\Support\Facades\Mail::to($record->email)->send(new \App\Mail\BonusAddedMail($record, $amount, $data['description']));
+                            } catch (\Exception $e) {
+                                \Illuminate\Support\Facades\Log::error('Mail sending failed: ' . $e->getMessage());
+                            }
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Bonus Added Successfully')
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('No pending bonus to add')
+                                ->warning()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -274,6 +390,6 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->where('is_admin', false);
     }
 }

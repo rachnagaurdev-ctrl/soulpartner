@@ -12,11 +12,11 @@ class BookingController extends Controller
     public function initiate(Request $request, $profile_id)
     {
         $request->validate([
-            'date' => 'required',
+            'date' => 'required|date|after_or_equal:today',
             'time' => 'required',
             'category_id' => 'required',
-            'razorpay_payment_id' => 'required''
-l b     ]);
+            'razorpay_payment_id' => 'required'
+        ]);
 
         $partner = User::where('profile_id', $profile_id)->firstOrFail();
         $user = Auth::user();
@@ -135,6 +135,15 @@ l b     ]);
             'start_code' => str_pad((string)mt_rand(1000, 9999), 4, '0', STR_PAD_LEFT)
         ]);
 
+        try {
+            \Illuminate\Support\Facades\Mail::to($booking->user->email)->send(new \App\Mail\BookingCreatedMail($booking, 'customer'));
+            // Added sleep(2) to prevent Mailtrap free tier rate limit ("Too many emails per second")
+            sleep(2);
+            \Illuminate\Support\Facades\Mail::to($booking->partner->email)->send(new \App\Mail\BookingCreatedMail($booking, 'partner'));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Mail sending failed: ' . $e->getMessage());
+        }
+
         session()->put('success_booking_id', $booking->id);
 
         return response()->json([
@@ -202,7 +211,168 @@ l b     ]);
         $booking->status = 'completed';
         $booking->save();
 
+        // Process wallet credit for the partner
+        $partner = \App\Models\User::find($booking->partner_id);
+        if ($partner) {
+            $settings = \App\Models\CommissionSetting::first();
+            $amountToAdd = $booking->amount;
+            
+            $isCommissionBased = !$partner->is_salary_based;
+
+            if (!$isCommissionBased && $settings) {
+                // Salary-based partner: gets flat amount per booking
+                $amountToAdd = $settings->salary_per_booking;
+            } else {
+                // Commission-based partner: gets booking amount minus commission
+                if ($settings && $settings->commission_value > 0) {
+                    if ($settings->commission_value <= 100) {
+                        $commissionAmount = ($booking->amount * $settings->commission_value) / 100;
+                        $amountToAdd -= $commissionAmount;
+                    } else {
+                        $amountToAdd -= $settings->commission_value;
+                    }
+                }
+            }
+            if ($amountToAdd < 0) $amountToAdd = 0;
+
+            if ($amountToAdd > 0) {
+                $partner->wallet_balance += $amountToAdd;
+                $partner->save();
+
+                \App\Models\WalletTransaction::create([
+                    'user_id' => $partner->id,
+                    'amount' => $amountToAdd,
+                    'type' => 'credit',
+                    'description' => "Earnings for booking #{$booking->id}" . ($isCommissionBased ? " (Commission deducted)" : " (Per Booking Salary)"),
+                ]);
+                
+                try {
+                    \Illuminate\Support\Facades\Mail::to($partner->email)->send(new \App\Mail\BookingCompletedMail($booking, $amountToAdd, !$isCommissionBased));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Mail sending failed: ' . $e->getMessage());
+                }
+            }
+
+            // AUTO-CALCULATE AND PAYOUT TARGET BONUS
+            if (!$isCommissionBased && $settings) {
+                $target = $settings->default_target;
+                $bonusPerBooking = $settings->salary_target_bonus;
+                
+                if ($target > 0 && $bonusPerBooking > 0) {
+                    $month = now()->month;
+                    $year = now()->year;
+
+                    $totalBookingsThisMonth = \App\Models\Booking::where('partner_id', $partner->id)
+                        ->where('status', 'completed')
+                        ->whereMonth('created_at', $month)
+                        ->whereYear('created_at', $year)
+                        ->count();
+
+                    if ($totalBookingsThisMonth >= $target) {
+                        // Partner has met/exceeded target. Find all UNPAID bookings for this month
+                        $unpaidBookingsCount = \App\Models\Booking::where('partner_id', $partner->id)
+                            ->where('status', 'completed')
+                            ->where('is_bonus_paid', false)
+                            ->whereMonth('created_at', $month)
+                            ->whereYear('created_at', $year)
+                            ->count();
+
+                        if ($unpaidBookingsCount > 0) {
+                            $totalBonus = $unpaidBookingsCount * $bonusPerBooking;
+                            
+                            $partner->wallet_balance += $totalBonus;
+                            $partner->save();
+
+                            \App\Models\WalletTransaction::create([
+                                'user_id' => $partner->id,
+                                'amount' => $totalBonus,
+                                'type' => 'credit',
+                                'description' => "Automatic target bonus for {$unpaidBookingsCount} bookings",
+                            ]);
+                            
+                            try {
+                                \Illuminate\Support\Facades\Mail::to($partner->email)->send(new \App\Mail\BonusAddedMail($partner, $totalBonus, "Automatic target bonus for {$unpaidBookingsCount} bookings"));
+                            } catch (\Exception $e) {
+                                \Illuminate\Support\Facades\Log::error('Mail sending failed: ' . $e->getMessage());
+                            }
+
+                            // Mark these bookings as paid
+                            \App\Models\Booking::where('partner_id', $partner->id)
+                                ->where('status', 'completed')
+                                ->where('is_bonus_paid', false)
+                                ->whereMonth('created_at', $month)
+                                ->whereYear('created_at', $year)
+                                ->update(['is_bonus_paid' => true]);
+                        }
+                    }
+                }
+            }
+        }
+
         return response()->json(['success' => true, 'message' => 'Booking completed successfully!']);
+    }
+
+    public function cancelBooking(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        $isClient = $booking->user_id === Auth::id();
+        $isPartner = $booking->partner_id === Auth::id();
+
+        if (!$isClient && !$isPartner) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        if (strtolower($booking->status) === 'cancelled' || strtolower($booking->status) === 'completed') {
+            return response()->json(['success' => false, 'message' => 'Booking cannot be cancelled in current status.'], 400);
+        }
+
+        if ($booking->started_at) {
+            return response()->json(['success' => false, 'message' => 'Cannot cancel a booking that has already started.'], 400);
+        }
+
+        $booking->status = 'cancelled';
+        $booking->cancel_reason = $request->input('reason', '');
+        $booking->save();
+
+        // Refund the amount to the client's wallet based on policy
+        $client = $booking->user;
+        if ($booking->amount > 0) {
+            if ($isPartner) {
+                // 100% refund if partner cancels
+                $refundPercent = 100;
+            } else {
+                $settings = \App\Models\CommissionSetting::first();
+                $refundBefore24 = $settings ? $settings->refund_before_24_hours : 100;
+                $refundWithin24 = $settings ? $settings->refund_within_24_hours : 50;
+
+                $dateString = $booking->booking_date instanceof \Carbon\Carbon 
+                    ? $booking->booking_date->format('Y-m-d') 
+                    : (is_string($booking->booking_date) ? substr($booking->booking_date, 0, 10) : date('Y-m-d', strtotime($booking->booking_date)));
+                    
+                $bookingDatetime = \Carbon\Carbon::parse($dateString . ' ' . $booking->booking_time);
+                $hoursRemaining = now()->diffInHours($bookingDatetime, false);
+
+                $refundPercent = ($hoursRemaining > 24) ? $refundBefore24 : $refundWithin24;
+            }
+
+            $refundAmount = ($booking->amount * $refundPercent) / 100;
+
+            if ($refundAmount > 0) {
+                $client->wallet_balance += $refundAmount;
+                $client->save();
+
+                $actor = $isPartner ? 'Partner' : 'Client';
+                \App\Models\WalletTransaction::create([
+                    'user_id' => $client->id,
+                    'amount' => $refundAmount,
+                    'type' => 'credit',
+                    'description' => "Refund ({$refundPercent}%) for cancelled booking #{$booking->id} by {$actor}",
+                ]);
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Booking cancelled successfully! Applicable refund added to wallet.']);
     }
 
     public function submitReview(Request $request, $id)

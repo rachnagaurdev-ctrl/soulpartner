@@ -121,10 +121,6 @@ class DashboardController extends Controller
                     $key = env('RAZORPAY_KEY_ID');
                     $secret = env('RAZORPAY_KEY_SECRET');
                     
-                    // Note: Real Razorpay subscription updates require a 'subscription_id' not 'order_id'
-                    // \Illuminate\Support\Facades\Http::withBasicAuth($key, $secret)
-                    //    ->post("https://api.razorpay.com/v1/subscriptions/{$order->subscription_id}/$statusText");
-                    
                     \Illuminate\Support\Facades\Log::info("Razorpay Auto-Renew $statusText simulated for order {$order->id}.");
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error('Razorpay auto-renew update failed: ' . $e->getMessage());
@@ -135,5 +131,38 @@ class DashboardController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'Order not found.'], 404);
+    }
+
+    public function salary()
+    {
+        $user = Auth::user();
+        $salaryRequests = \App\Models\PartnerSalaryRequest::where('user_id', $user->id)->get();
+        return view('dashboard.salary', compact('user', 'salaryRequests'));
+    }
+
+    public function submitSalaryRequest(Request $request)
+    {
+        $request->validate([
+            'request_type' => 'required|in:monthly_payroll,per_booking',
+        ]);
+
+        $user = Auth::user();
+
+        // Check if already pending
+        $existing = \App\Models\PartnerSalaryRequest::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'You already have a pending salary request.');
+        }
+
+        \App\Models\PartnerSalaryRequest::create([
+            'user_id' => $user->id,
+            'request_type' => $request->request_type,
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Salary request submitted successfully and is pending admin approval.');
     }
 }

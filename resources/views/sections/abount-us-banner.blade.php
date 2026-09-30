@@ -12,7 +12,7 @@
                             {!! $data['subtitle'] ?? '' !!} 
                         </h1>
                         <p class="about-hero-desc">
-                            {{$data['description'] ?? ''}}
+                            {!! $data['description'] ?? '' !!}
                         </p>
                     </div>
 

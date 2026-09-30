@@ -968,18 +968,22 @@ h2 {
 
 .plan-icon-silver {
   background: #f0eaf8;
+  color: #5531a8;
 }
 
 .plan-icon-gold {
   background: #fff4e0;
+  color: #f5a623;
 }
 
 .plan-icon-premium {
   background: #f0ecf8;
+  color: #7d4bce;
 }
 
 .plan-icon-yearly {
   background: #fce8f4;
+  color: #ed287a;
 }
 
 .plan-name {
@@ -6589,7 +6593,8 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    flex-wrap: wrap;
+    gap: 10px 15px;
     font-size: 0.8rem;
     color: #555;
     margin-bottom: 15px;
@@ -6611,7 +6616,7 @@ h2 {
 .category-meta-text {
     font-weight: 600;
     color: #34495e;
-    white-space: nowrap;
+    word-break: break-word;
 }
 
 .category-btn {

@@ -22,7 +22,11 @@
             <div class="catlist-body">
               <div class="catlist-icon">
                   @if($cat->icon)
-                     <i class="fa-solid fa-{{$cat->icon}}"></i>
+                      @if(preg_match('/^[a-z0-9-]+$/i', $cat->icon))
+                          <i class="fa-solid fa-{{$cat->icon}}"></i>
+                      @else
+                          <span style="display:inline-block; font-size: 1.5em; line-height: 1;">{!! $cat->icon !!}</span>
+                      @endif
                   @else
                       <i class="fa-solid fa-star"></i>
                   @endif
