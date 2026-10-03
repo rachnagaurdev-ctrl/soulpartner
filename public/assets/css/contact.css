@@ -74,8 +74,15 @@
 }
 
 @keyframes pulseHeart {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
 }
 
 .contact-eyebrow-tag .accent-line {
@@ -602,8 +609,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==========================================================================
@@ -836,8 +850,15 @@
 }
 
 @keyframes floatTooltip {
-  0%, 100% { transform: translate(-50%, -100%); }
-  50% { transform: translate(-50%, -108%); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -100%);
+  }
+
+  50% {
+    transform: translate(-50%, -108%);
+  }
 }
 
 .map-marker-tooltip::after {
@@ -1077,7 +1098,7 @@
 }
 
 .footer-brand-logo img {
-  height: 44px;
+  height: 70px;
   width: auto;
   border-radius: 6px;
   background: #ffffff;
@@ -1215,8 +1236,15 @@
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .chat-modal-header {
@@ -1329,30 +1357,30 @@
   .contact-hero-container {
     gap: 28px;
   }
-  
+
   .contact-hero-title {
     font-size: 42px;
   }
-  
+
   .contact-grid {
     grid-template-columns: 1fr 1fr;
     gap: 26px;
   }
-  
+
   .faq-layout-grid {
     grid-template-columns: 1fr;
     gap: 32px;
   }
-  
+
   .faq-intro-col {
     position: static;
     max-width: 600px;
   }
-  
+
   .office-card-wrapper {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .office-action-pane {
     grid-column: span 2;
     flex-direction: row;
@@ -1367,70 +1395,70 @@
     flex-direction: column;
     text-align: center;
   }
-  
+
   .contact-hero-content {
     max-width: 100%;
   }
-  
+
   .contact-eyebrow-tag {
     justify-content: center;
   }
-  
+
   .contact-hero-subtitle {
     margin: 0 auto;
   }
-  
+
   .contact-hero-visual {
     width: 100%;
     justify-content: center;
   }
-  
+
   .contact-hero-photo-wrap {
     max-width: 100%;
     height: 260px;
   }
-  
+
   .contact-grid {
     grid-template-columns: 1fr;
     gap: 36px;
   }
-  
+
   .faq-accordion-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .office-card-wrapper {
     grid-template-columns: 1fr;
   }
-  
+
   .office-map-container {
     height: 250px;
   }
-  
+
   .office-info-pane {
     border-right: none;
     border-bottom: 1px solid var(--contact-border-light);
   }
-  
+
   .office-action-pane {
     grid-column: span 1;
     flex-direction: column;
     text-align: center;
     gap: 16px;
   }
-  
+
   .footer-top-row {
     flex-direction: column;
     text-align: center;
     gap: 20px;
   }
-  
+
   .footer-nav-menu {
     flex-wrap: wrap;
     justify-content: center;
     gap: 16px 20px;
   }
-  
+
   .footer-bottom-row {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -1451,44 +1479,44 @@
   .contact-hero-section {
     padding: 28px 0 38px;
   }
-  
+
   .contact-hero-title {
     font-size: 34px;
   }
-  
+
   .contact-hero-handwriting {
     font-size: 21px;
     right: 14px;
     top: 14px;
   }
-  
+
   .contact-form-card {
     padding: 22px 18px;
   }
-  
+
   .form-row-2col {
     grid-template-columns: 1fr;
     gap: 14px;
   }
-  
+
   .contact-info-card {
     padding: 14px 16px;
     gap: 14px;
   }
-  
+
   .card-icon-box {
     width: 42px;
     height: 42px;
   }
-  
+
   .faq-main-title {
     font-size: 28px;
   }
-  
+
   .office-info-pane {
     padding: 22px 18px;
   }
-  
+
   .office-action-pane {
     padding: 22px 18px;
   }

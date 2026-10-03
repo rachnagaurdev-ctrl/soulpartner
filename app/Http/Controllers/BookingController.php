@@ -192,6 +192,14 @@ class BookingController extends Controller
         $booking->started_at = now();
         $booking->save();
 
+        try {
+            \Illuminate\Support\Facades\Mail::to($booking->user->email)->send(new \App\Mail\BookingStartedMail($booking, 'customer'));
+            sleep(2); // Mailtrap rate limit
+            \Illuminate\Support\Facades\Mail::to($booking->partner->email)->send(new \App\Mail\BookingStartedMail($booking, 'partner'));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Mail sending failed: ' . $e->getMessage());
+        }
+
         return response()->json(['success' => true, 'message' => 'Booking started successfully!']);
     }
 
@@ -370,6 +378,15 @@ class BookingController extends Controller
                     'description' => "Refund ({$refundPercent}%) for cancelled booking #{$booking->id} by {$actor}",
                 ]);
             }
+        }
+
+        try {
+            $cancelledByStr = $isPartner ? 'Partner' : ($isClient ? 'Customer' : 'Admin');
+            \Illuminate\Support\Facades\Mail::to($booking->user->email)->send(new \App\Mail\BookingCancelledMail($booking, 'customer', $cancelledByStr));
+            sleep(2); // Mailtrap rate limit
+            \Illuminate\Support\Facades\Mail::to($booking->partner->email)->send(new \App\Mail\BookingCancelledMail($booking, 'partner', $cancelledByStr));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Mail sending failed: ' . $e->getMessage());
         }
 
         return response()->json(['success' => true, 'message' => 'Booking cancelled successfully! Applicable refund added to wallet.']);
